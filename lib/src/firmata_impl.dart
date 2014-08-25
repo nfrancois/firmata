@@ -87,9 +87,9 @@ class Board {
 
   final SerialPort _serialPort;
 
-  Board(String portname) : _serialPort = new SerialPort(portname) {
+  Board(String portname) : _serialPort = new SerialPort(portname, baudrate: 57600) {
     /*
-     events.EventEmitter.call(this);
+     events.EventEmitter.call(this);SerialPort(this.portname, {this.baudrate
   if (typeof options === "function" || typeof options === "undefined") {
     callback = options;
     options = {
@@ -106,6 +106,7 @@ class Board {
   }
 
   void digitalWrite(int pin, int value){
+    /*
     final int port = pin ~/ 8;
     _pins[pin] = value;
     int portValue = 0;
@@ -115,7 +116,10 @@ class Board {
       }
     }
     print("port=$port, portValue=$portValue");
-    _serialPort.write([DIGITAL_MESSAGE | port, portValue & 0x7F, (portValue >> 7) & 0x7F]);
+    */
+    int portNumber=(pin>>3) & 0x0F;
+    print("port=$port, portValue=$portValue");
+    _serialPort.write([DIGITAL_MESSAGE | portNumber, portValue & 0x7F, (portValue >> 7) & 0x7F]);
   }
 
   Future<bool> queryFirmware() {

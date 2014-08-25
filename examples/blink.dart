@@ -6,6 +6,13 @@ import 'dart:async';
 final ledPin = 13;
 
 main(){
+  final int pin = 13;
+  print((pin >> 3) & 0x0F);
+  int value  =  0|(1<<(pin & 0x07));
+  print(value);
+  print(value & 0x7F);
+  print(value >> 7);
+  /*
 	print('blink start ...');
 	final board = new Board('/dev/tty.usbmodem1421');
 	board.open().then((_) {
@@ -25,4 +32,5 @@ main(){
 		});
 	})
 	.catchError((error) => print("Cannot connect $error"));
+	*/
 }
