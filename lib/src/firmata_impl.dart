@@ -7,6 +7,7 @@ const int REPORT_ANALOG = 0xC0;
 const int DIGITAL_MESSAGE = 0x90;
 const int START_SYSEX = 0xF0;
 const int END_SYSEX = 0xF7;
+
 const int QUERY_FIRMWARE = 0x79;
 const int REPORT_VERSION = 0xF9;
 const int ANALOG_MESSAGE = 0xE0;
@@ -38,24 +39,6 @@ const int ONEWIRE_READ_REQUEST_BIT = 0x08;
 const int ONEWIRE_DELAY_REQUEST_BIT = 0x10;
 const int ONEWIRE_WRITE_REQUEST_BIT = 0x20;
 const int ONEWIRE_WITHDATA_REQUEST_BITS = 0x3C;
-
-
-/*
-
-SYSEX_RESPONSE[QUERY_FIRMWARE] = function(board) {
-  var firmwareBuf = [];
-  board.firmware.version = {};
-  board.firmware.version.major = board.currentBuffer[2];
-  board.firmware.version.minor = board.currentBuffer[3];
-  for (var i = 4, length = board.currentBuffer.length - 2; i < length; i += 2) {
-    firmwareBuf.push((board.currentBuffer[i] & 0x7F) | ((board.currentBuffer[i + 1] & 0x7F) << 7));
-  }
-
-  board.firmware.name = new Buffer(firmwareBuf).toString("utf8", 0, firmwareBuf.length);
-  board.emit("queryfirmware");
-};
-
- */
 
 
 class Modes {
@@ -97,8 +80,8 @@ class Board {
     _serialPort.open().then((_){
       _serialPort.onRead.listen(_parser.append);
     });
-    _parser.onReportVersion.listen((firware){
-      _firmaware = firware;
+    _parser.onReportVersion.listen((firmware){
+      _firmaware = firmware;
       for (var i = 0; i < 16; i++) {
         _serialPort.write([REPORT_DIGITAL | i, 1]);
         _serialPort.write([REPORT_ANALOG | i, 1]);
@@ -113,10 +96,7 @@ class Board {
 
   void pinMode(int pin, int mode){
     _pins[pin] = mode;
-    //_serialPort.write([PIN_MODE, pin, mode]);
-    _serialPort.write([PIN_MODE]);
-    _serialPort.write([pin]);
-    _serialPort.write([mode]);
+    _serialPort.write([PIN_MODE, pin, mode]);
   }
 
   void digitalWrite(int pin, int value){
@@ -141,16 +121,13 @@ class Board {
     //int portNumber=(pin>>3) & 0x0F;
     //_serialPort.write([DIGITAL_MESSAGE | portNumber, portNumber & 0x7F, (portNumber >> 7) & 0x7F]);
 
-
     final portNumber=(pin>>3) & 0x0F;
-    if(value==0)
-      digitalOutputData[portNumber]&=~(1<<(pin & 0x07));
-    else
-      digitalOutputData[portNumber]|=(1<<(pin & 0x07));
-    _serialPort.write([DIGITAL_MESSAGE | portNumber]);
-    _serialPort.write([digitalOutputData[portNumber] & 0x7F]);
-    _serialPort.write([digitalOutputData[portNumber] >> 7]);
-
+    if(value==0) {
+      digitalOutputData[portNumber] &= ~(1 << (pin & 0x07));
+    } else {
+      digitalOutputData[portNumber] |= (1 << (pin & 0x07));
+    }
+    _serialPort.write([DIGITAL_MESSAGE | portNumber, digitalOutputData[portNumber] & 0x7F, digitalOutputData[portNumber] >> 7]);
   }
 
   Future<bool> queryFirmware() {
@@ -172,24 +149,29 @@ class SysexParser {
   int _currentAnalyse = 0;
 
   void append(List<int> bytes){
-    _buffer.addAll(bytes);
-    _analyseBytes();
-  }
-
-  void _analyseBytes() {
+    print(bytes);
     // find current analyse if necessary
     if (_currentAnalyse == 0) {
-      if (_buffer.first == REPORT_VERSION) {
+      // Only analyse some messages
+      if (bytes.first == REPORT_VERSION) {
+        _buffer.addAll(bytes);
         _currentAnalyse = REPORT_VERSION;
       }
-    } else if (_buffer.last == END_SYSEX) {
+    } else if (bytes.last == END_SYSEX) {
       switch (_currentAnalyse) {
         case REPORT_VERSION:
+          _buffer.addAll(bytes);
           _readReportVersion();
       }
       _currentAnalyse = 0;
       _buffer.clear();
+    } else if(_currentAnalyse != 0){
+      _buffer.addAll(bytes);
     }
+  }
+
+  void _analyseBytes() {
+
   }
 
   void _readReportVersion(){
