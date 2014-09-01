@@ -42,7 +42,6 @@ const int ONEWIRE_WITHDATA_REQUEST_BITS = 0x3C;
 
 /*
 
-
 SYSEX_RESPONSE[QUERY_FIRMWARE] = function(board) {
   var firmwareBuf = [];
   board.firmware.version = {};
@@ -81,28 +80,43 @@ class Board {
   static final int HIGH = 1;
   static final int LOW = 0;
 
-
+  List<int> digitalOutputData= [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   Map<int, int> _pins = {};
 
-  final SerialPort _serialPort;
 
-  Board(String portname) : _serialPort = new SerialPort(portname, baudrate: 57600) {
-    /*
-     events.EventEmitter.call(this);SerialPort(this.portname, {this.baudrate
-  if (typeof options === "function" || typeof options === "undefined") {
-    callback = options;
-    options = {
-      reportVersionTimeout: 5000
-    };
-     */
+  final SerialPort _serialPort;
+  final _parser = new SysexParser();
+
+  FirmataVersion _firmaware;
+
+  Board(String portname) : _serialPort = new SerialPort(portname, baudrate: 57600);
+
+  Future<bool> open() {
+    final completer = new Completer<bool>();
+    _serialPort.open().then((_){
+      _serialPort.onRead.listen(_parser.append);
+    });
+    _parser.onReportVersion.listen((firware){
+      _firmaware = firware;
+      for (var i = 0; i < 16; i++) {
+        _serialPort.write([REPORT_DIGITAL | i, 1]);
+        _serialPort.write([REPORT_ANALOG | i, 1]);
+      }
+      completer.complete(true);
+    });
+    return completer.future;
   }
 
-  Future<bool> open() => _serialPort.open();
+  /// Getter for firmware information
+  FirmataVersion get firmware => _firmaware;
 
   void pinMode(int pin, int mode){
     _pins[pin] = mode;
-    _serialPort.write([PIN_MODE, pin, mode]);
+    //_serialPort.write([PIN_MODE, pin, mode]);
+    _serialPort.write([PIN_MODE]);
+    _serialPort.write([pin]);
+    _serialPort.write([mode]);
   }
 
   void digitalWrite(int pin, int value){
@@ -116,10 +130,27 @@ class Board {
       }
     }
     print("port=$port, portValue=$portValue");
+
+
+    digitalOutputData[portNumber]|=(1<<(pin & 0x07));
+    serial.write(DIGITAL_MESSAGE | portNumber);
+    serial.write(digitalOutputData[portNumber] & 0x7F);
+    serial.write(digitalOutputData[portNumber] >> 7);
+
     */
-    int portNumber=(pin>>3) & 0x0F;
-    print("port=$port, portValue=$portValue");
-    _serialPort.write([DIGITAL_MESSAGE | portNumber, portValue & 0x7F, (portValue >> 7) & 0x7F]);
+    //int portNumber=(pin>>3) & 0x0F;
+    //_serialPort.write([DIGITAL_MESSAGE | portNumber, portNumber & 0x7F, (portNumber >> 7) & 0x7F]);
+
+
+    final portNumber=(pin>>3) & 0x0F;
+    if(value==0)
+      digitalOutputData[portNumber]&=~(1<<(pin & 0x07));
+    else
+      digitalOutputData[portNumber]|=(1<<(pin & 0x07));
+    _serialPort.write([DIGITAL_MESSAGE | portNumber]);
+    _serialPort.write([digitalOutputData[portNumber] & 0x7F]);
+    _serialPort.write([digitalOutputData[portNumber] >> 7]);
+
   }
 
   Future<bool> queryFirmware() {
@@ -128,5 +159,57 @@ class Board {
   }
 
   Future<bool> close() => _serialPort.close();
+
+}
+
+
+/// Parser which read message sent from arduino
+class SysexParser {
+
+  final _reportVersionController = new StreamController<FirmataVersion>();
+
+  List<int> _buffer = [];
+  int _currentAnalyse = 0;
+
+  void append(List<int> bytes){
+    _buffer.addAll(bytes);
+    _analyseBytes();
+  }
+
+  void _analyseBytes() {
+    // find current analyse if necessary
+    if (_currentAnalyse == 0) {
+      if (_buffer.first == REPORT_VERSION) {
+        _currentAnalyse = REPORT_VERSION;
+      }
+    } else if (_buffer.last == END_SYSEX) {
+      switch (_currentAnalyse) {
+        case REPORT_VERSION:
+          _readReportVersion();
+      }
+      _currentAnalyse = 0;
+      _buffer.clear();
+    }
+  }
+
+  void _readReportVersion(){
+    final major = _buffer[1];
+    final minor = _buffer[2];
+    final name = new String.fromCharCodes(_buffer.getRange(5, _buffer.length-1));
+    _reportVersionController.add(new FirmataVersion(name, major, minor));
+  }
+
+  Stream<FirmataVersion> get onReportVersion =>
+      _reportVersionController.stream;
+
+}
+
+
+class FirmataVersion {
+  final String name;
+  final int major;
+  final int minor;
+
+  FirmataVersion(this.name, this.major, this.minor);
 
 }
