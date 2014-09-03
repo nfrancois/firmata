@@ -63,8 +63,6 @@ class Board {
   static final int HIGH = 1;
   static final int LOW = 0;
 
-  List<int> digitalOutputData= [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
   Map<int, int> _pins = {};
 
 
@@ -86,7 +84,8 @@ class Board {
         _serialPort.write([REPORT_DIGITAL | i, 1]);
         _serialPort.write([REPORT_ANALOG | i, 1]);
       }
-      completer.complete(true);
+      queryCapability().then((_) => queryAnalogMapping())
+                       .then((_) =>  completer.complete(true));
     });
     return completer.future;
   }
@@ -100,7 +99,6 @@ class Board {
   }
 
   void digitalWrite(int pin, int value){
-    /*
     final int port = pin ~/ 8;
     _pins[pin] = value;
     int portValue = 0;
@@ -109,31 +107,17 @@ class Board {
         portValue |= (1 << i);
       }
     }
-    print("port=$port, portValue=$portValue");
-
-
-    digitalOutputData[portNumber]|=(1<<(pin & 0x07));
-    serial.write(DIGITAL_MESSAGE | portNumber);
-    serial.write(digitalOutputData[portNumber] & 0x7F);
-    serial.write(digitalOutputData[portNumber] >> 7);
-
-    */
-    //int portNumber=(pin>>3) & 0x0F;
-    //_serialPort.write([DIGITAL_MESSAGE | portNumber, portNumber & 0x7F, (portNumber >> 7) & 0x7F]);
-
-    final portNumber=(pin>>3) & 0x0F;
-    if(value==0) {
-      digitalOutputData[portNumber] &= ~(1 << (pin & 0x07));
-    } else {
-      digitalOutputData[portNumber] |= (1 << (pin & 0x07));
-    }
-    _serialPort.write([DIGITAL_MESSAGE | portNumber, digitalOutputData[portNumber] & 0x7F, digitalOutputData[portNumber] >> 7]);
+    _serialPort.write([DIGITAL_MESSAGE | port, portValue & 0x7F, (portValue >> 7) & 0x7F]);
   }
 
-  Future<bool> queryFirmware() {
-    //this.once("queryfirmware", callback);
-    return _serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
-  }
+  Future<bool> queryFirmware() =>
+    _serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
+
+  Future<bool> queryCapability() =>
+    _serialPort.write([START_SYSEX, CAPABILITY_QUERY, END_SYSEX]);
+
+  Future<bool> queryAnalogMapping() =>
+    _serialPort.write([START_SYSEX, ANALOG_MAPPING_QUERY, END_SYSEX]);
 
   Future<bool> close() => _serialPort.close();
 
@@ -149,7 +133,7 @@ class SysexParser {
   int _currentAnalyse = 0;
 
   void append(List<int> bytes){
-    print(bytes);
+    //print(bytes);
     // find current analyse if necessary
     if (_currentAnalyse == 0) {
       // Only analyse some messages
@@ -168,10 +152,6 @@ class SysexParser {
     } else if(_currentAnalyse != 0){
       _buffer.addAll(bytes);
     }
-  }
-
-  void _analyseBytes() {
-
   }
 
   void _readReportVersion(){
