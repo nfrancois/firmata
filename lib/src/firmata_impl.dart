@@ -98,7 +98,7 @@ class Board {
     _serialPort.write([PIN_MODE, pin, mode]);
   }
 
-  void digitalWrite(int pin, int value){
+  Future<bool> digitalWrite(int pin, int value){
     final int port = pin ~/ 8;
     _pins[pin] = value;
     int portValue = 0;
@@ -107,7 +107,7 @@ class Board {
         portValue |= (1 << i);
       }
     }
-    _serialPort.write([DIGITAL_MESSAGE | port, portValue & 0x7F, (portValue >> 7) & 0x7F]);
+    return _serialPort.write([DIGITAL_MESSAGE | port, portValue & 0x7F, (portValue >> 7) & 0x7F]);
   }
 
   Future<bool> queryFirmware() =>
