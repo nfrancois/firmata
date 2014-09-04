@@ -111,6 +111,14 @@ class Board {
     return _serialPort.write([DIGITAL_MESSAGE | port, portValue & 0x7F, (portValue >> 7) & 0x7F]);
   }
 
+
+ /// Asks the arduino to write an analog message.
+ // TODO : when pin > 15 ?
+ Future<bool> analogWrite(int pin, int value) {
+   _pins[pin] =  value;
+   return _serialPort.write([ANALOG_MESSAGE | pin, value & 0x7F, (value >> 7) & 0x7F]);
+ }
+
   /// Resquest a QUERY_FIRMWARE call
   Future<bool> queryFirmware() =>
     _serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
