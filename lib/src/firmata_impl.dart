@@ -123,6 +123,10 @@ class Board {
   Future<bool> queryFirmware() =>
     _serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
 
+  /// Asks the arduino to tell us the current state of a pin
+  Future<bool> queryPinState(int pin) =>
+  _serialPort.write(([START_SYSEX, PIN_STATE_QUERY, pin, END_SYSEX]));
+
   /// Request a CAPABILITY_RESPONSE call
   Future<bool> queryCapability() =>
     _serialPort.write([START_SYSEX, CAPABILITY_QUERY, END_SYSEX]);
@@ -130,7 +134,6 @@ class Board {
   /// Asks the arduino to tell us its analog pin mapping
   Future<bool> queryAnalogMapping() =>
     _serialPort.write([START_SYSEX, ANALOG_MAPPING_QUERY, END_SYSEX]);
-
 
   /// Close the connection
   Future<bool> close() => _serialPort.close();
