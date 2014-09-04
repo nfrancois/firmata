@@ -65,7 +65,6 @@ class Board {
 
   Map<int, int> _pins = {};
 
-
   final SerialPort _serialPort;
   final _parser = new SysexParser();
 
@@ -73,6 +72,7 @@ class Board {
 
   Board(String portname) : _serialPort = new SerialPort(portname, baudrate: 57600);
 
+  /// Open the connection with the board
   Future<bool> open() {
     final completer = new Completer<bool>();
     _serialPort.open().then((_){
@@ -98,6 +98,7 @@ class Board {
     _serialPort.write([PIN_MODE, pin, mode]);
   }
 
+  ///Asks the arduino to write a value to a digital pin
   Future<bool> digitalWrite(int pin, int value){
     final int port = pin ~/ 8;
     _pins[pin] = value;
@@ -110,15 +111,20 @@ class Board {
     return _serialPort.write([DIGITAL_MESSAGE | port, portValue & 0x7F, (portValue >> 7) & 0x7F]);
   }
 
+  /// Resquest a QUERY_FIRMWARE call
   Future<bool> queryFirmware() =>
     _serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
 
+  /// Request a CAPABILITY_RESPONSE call
   Future<bool> queryCapability() =>
     _serialPort.write([START_SYSEX, CAPABILITY_QUERY, END_SYSEX]);
 
+  /// Asks the arduino to tell us its analog pin mapping
   Future<bool> queryAnalogMapping() =>
     _serialPort.write([START_SYSEX, ANALOG_MAPPING_QUERY, END_SYSEX]);
 
+
+  /// Close the connection
   Future<bool> close() => _serialPort.close();
 
 }
@@ -132,6 +138,7 @@ class SysexParser {
   List<int> _buffer = [];
   int _currentAnalyse = 0;
 
+  /// Append byte to parse
   void append(List<int> bytes){
     //print(bytes);
     // find current analyse if necessary
@@ -161,12 +168,13 @@ class SysexParser {
     _reportVersionController.add(new FirmataVersion(name, major, minor));
   }
 
+  /// Stream that sent FirmataVersion
   Stream<FirmataVersion> get onReportVersion =>
       _reportVersionController.stream;
 
 }
 
-
+/// Information about Firmata version
 class FirmataVersion {
   final String name;
   final int major;
