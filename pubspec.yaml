@@ -6,8 +6,8 @@ homepage: https://github.com/nfrancois/Firmata
 environnment:
   sdk: '>=1.5.0 <2.0.0'
 dependencies:
-#  serial_port: "0.0.1 <0.0.2"
-  serial_port:
-    path: ../SerialPort
+  serial_port: "0.0.2 <0.0.3"
+#  serial_port:
+#    path: ../SerialPort
 dev_dependencies:
   unittest: ">=0.11.0+4 <0.12.0"
