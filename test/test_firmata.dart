@@ -24,12 +24,56 @@ void main() {
             //expect(version.name, 'StandardFirmata.in);
         }));
 
-        new Timer(new Duration(seconds: 3), () {
+        new Timer(new Duration(seconds: 1), () {
           fail('event not fired in time');
         });
 
         parser.append(CONNEXION_BYTES);
 
     });
+
+    test('Digital message', (){
+
+      parser.onDigitalMessage.first.then(expectAsync((Map<int, int> pinState){
+        expect(pinState.length, 8);
+        expect(pinState[0], 0);
+        expect(pinState[1], 0);
+        expect(pinState[2], 1);
+        expect(pinState[3], 1);
+        expect(pinState[4], 0);
+        expect(pinState[5], 0);
+        expect(pinState[6], 0);
+        expect(pinState[7], 0);
+      }));
+
+      new Timer(new Duration(seconds: 1), () {
+        fail('event not fired in time');
+      });
+
+      parser.append([144, 12, 0]);
+    });
+
+    test('Digital message other pins', (){
+
+      parser.onDigitalMessage.first.then(expectAsync((Map<int, int> pinState){
+        expect(pinState.length, 8);
+        expect(pinState[8], 0);
+        expect(pinState[9], 0);
+        expect(pinState[10], 1);
+        expect(pinState[11], 1);
+        expect(pinState[12], 0);
+        expect(pinState[13], 0);
+        expect(pinState[14], 0);
+        expect(pinState[15], 0);
+      }));
+
+      new Timer(new Duration(seconds: 1), () {
+        fail('event not fired in time');
+      });
+
+      parser.append([144, 12, 1]);
+    });    
+
+
   });
 }

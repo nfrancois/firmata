@@ -60,83 +60,97 @@ class Modes {
 
 class Board {
 
+  /// Constant to set a pins value to HIGH when the pin is set to an output.
   static final int HIGH = 1;
+  /// Constant to set a pins value to LOW when the pin is set to an output.
   static final int LOW = 0;
 
-  Map<int, int> _pins = {};
-
   final SerialPort _serialPort;
-  final _parser = new SysexParser();
+  final _pinStateController = new StreamController<PinState>();
+  final Map<int, int> _pins = {};
+  final SysexParser _parser = new SysexParser();
+  final List<int> _digitalOutputData = new List.filled(16, 0);
 
+  // Firmware version return by Firmata protocol, only read access
   FirmataVersion _firmaware;
 
+  /// Create a board on port name
   Board(String portname) : _serialPort = new SerialPort(portname, baudrate: 57600);
 
   /// Open the connection with the board
   Future<bool> open() {
     final completer = new Completer<bool>();
-    _serialPort.open().then((_){
+    _serialPort.open().then((_) {
       _serialPort.onRead.listen(_parser.append);
     });
-    _parser.onReportVersion.listen((firmware){
+    _parser.onReportVersion.listen((firmware) {
       _firmaware = firmware;
       for (var i = 0; i < 16; i++) {
         _serialPort.write([REPORT_DIGITAL | i, 1]);
         _serialPort.write([REPORT_ANALOG | i, 1]);
       }
-      queryCapability().then((_) => queryAnalogMapping())
-                       .then((_) =>  completer.complete(true));
+      queryCapability().then((_) => queryAnalogMapping()).then((_) => completer.complete(true));
     });
+    _parser.onDigitalMessage.listen(_pinStatesChanged);
     return completer.future;
+  }
+
+  /// Analyse the change and dispatch wich pin as change
+  void _pinStatesChanged(Map<int, int> states){
+    states.forEach((pin, state){
+      if(_pins[pin] == Modes.INPUT){
+        _pinStateController.add(new PinState(pin, state));
+      }
+    });
   }
 
   /// Getter for firmware information
   FirmataVersion get firmware => _firmaware;
 
-  void pinMode(int pin, int mode){
+  /// Asks the arduino to set the pin to a certain mode.
+  void pinMode(int pin, int mode) {
     _pins[pin] = mode;
     _serialPort.write([PIN_MODE, pin, mode]);
   }
 
-  ///Asks the arduino to write a value to a digital pin
-  Future<bool> digitalWrite(int pin, int value){
-    final int port = pin ~/ 8;
-    _pins[pin] = value;
-    int portValue = 0;
-    for(int i=0; i<8; i++){
-      if(_pins[8 * port+i] == 1){
-        portValue |= (1 << i);
-      }
+  /// Asks the arduino to write a value to a digital pin
+  Future<bool> digitalWrite(int pin, int value) {
+    final portNumber = (pin >> 3) & 0x0F;
+    if (value == 0) {
+      _digitalOutputData[portNumber] &= ~(1 << (pin & 0x07));
+    } else {
+      _digitalOutputData[portNumber] |= (1 << (pin & 0x07));
     }
-    return _serialPort.write([DIGITAL_MESSAGE | port, portValue & 0x7F, (portValue >> 7) & 0x7F]);
+    return _serialPort.write([DIGITAL_MESSAGE | portNumber, _digitalOutputData[portNumber] & 0x7F, _digitalOutputData[portNumber] >> 7]);
   }
 
+  /// Asks the arduino to read the value of digital pin
+  //Future<int> digitalRead(int pin) => new Future.value((_digitalInputData[pin>>3] >> (pin & 0x07)) & 0x01);
 
- /// Asks the arduino to write an analog message.
- // TODO : when pin > 15 ?
- Future<bool> analogWrite(int pin, int value) {
-   _pins[pin] =  value;
-   return _serialPort.write([ANALOG_MESSAGE | pin, value & 0x7F, (value >> 7) & 0x7F]);
- }
+  /// Asks the arduino to write an analog message.
+  // TODO : when pin > 15 ?
+  Future<bool> analogWrite(int pin, int value) {
+    _pins[pin] = value;
+    return _serialPort.write([ANALOG_MESSAGE | pin, value & 0x7F, (value >> 7) & 0x7F]);
+  }
 
   /// Resquest a QUERY_FIRMWARE call
-  Future<bool> queryFirmware() =>
-    _serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
+  Future<bool> queryFirmware() => _serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
 
   /// Asks the arduino to tell us the current state of a pin
-  Future<bool> queryPinState(int pin) =>
-  _serialPort.write(([START_SYSEX, PIN_STATE_QUERY, pin, END_SYSEX]));
+  //Future<bool> queryPinState(int pin) => _serialPort.write(([START_SYSEX, PIN_STATE_QUERY, pin, END_SYSEX]));
 
   /// Request a CAPABILITY_RESPONSE call
-  Future<bool> queryCapability() =>
-    _serialPort.write([START_SYSEX, CAPABILITY_QUERY, END_SYSEX]);
+  Future<bool> queryCapability() => _serialPort.write([START_SYSEX, CAPABILITY_QUERY, END_SYSEX]);
 
   /// Asks the arduino to tell us its analog pin mapping
-  Future<bool> queryAnalogMapping() =>
-    _serialPort.write([START_SYSEX, ANALOG_MAPPING_QUERY, END_SYSEX]);
+  Future<bool> queryAnalogMapping() => _serialPort.write([START_SYSEX, ANALOG_MAPPING_QUERY, END_SYSEX]);
 
   /// Close the connection
   Future<bool> close() => _serialPort.close();
+
+  /// Stream that sent FirmataVersion
+  Stream<PinState> get onPinStateChange => _pinStateController.stream;
 
 }
 
@@ -145,43 +159,62 @@ class Board {
 class SysexParser {
 
   final _reportVersionController = new StreamController<FirmataVersion>();
-
-  List<int> _buffer = [];
+  final _digitalMessageController = new StreamController<Map<int, int>>();
+  final List<int> _buffer = [];
   int _currentAnalyse = 0;
 
   /// Append byte to parse
-  void append(List<int> bytes){
-    //print(bytes);
-    // find current analyse if necessary
-    if (_currentAnalyse == 0) {
+  void append(List<int> bytes) {
+    bytes.forEach(_processByte);
+  }
+
+  /// Analyse byte by byte
+  void _processByte(int byte){
+    if (_currentAnalyse == 0) { // find current analyse if necessary
       // Only analyse some messages
-      if (bytes.first == REPORT_VERSION) {
-        _buffer.addAll(bytes);
-        _currentAnalyse = REPORT_VERSION;
+      if (byte == REPORT_VERSION || byte == DIGITAL_MESSAGE){
+        _currentAnalyse = byte;
+        _buffer.add(byte);
       }
-    } else if (bytes.last == END_SYSEX) {
-      switch (_currentAnalyse) {
-        case REPORT_VERSION:
-          _buffer.addAll(bytes);
-          _readReportVersion();
+    } else {// Reading bytes
+      _buffer.add(byte);
+      // Could be end of message
+      if (_currentAnalyse == REPORT_VERSION && byte == END_SYSEX) {
+        _decodeReportVersion(_buffer);
+        _reset();
+      } else if(_currentAnalyse == DIGITAL_MESSAGE && _buffer.length == 3) {
+        _decodeDigitalMessage(_buffer);
+        _reset();
       }
-      _currentAnalyse = 0;
-      _buffer.clear();
-    } else if(_currentAnalyse != 0){
-      _buffer.addAll(bytes);
     }
   }
 
-  void _readReportVersion(){
-    final major = _buffer[1];
-    final minor = _buffer[2];
-    final name = new String.fromCharCodes(_buffer.getRange(5, _buffer.length-1));
+  /// Reset the parser
+  void _reset(){
+    _buffer.clear();
+    _currentAnalyse = 0;
+  }
+
+  /// Decode report version in buffer and trig the stream
+  void _decodeReportVersion(List<int> message) {
+    final major = message[1];
+    final minor = message[2];
+    final name = new String.fromCharCodes(message.getRange(5, message.length - 1));
     _reportVersionController.add(new FirmataVersion(name, major, minor));
   }
 
+  void _decodeDigitalMessage(List<int> message){
+    final pins = new List<int>.generate(8, (i) => i+(message[2]*8));
+    final states = new List<int>.generate(8, (i) => (message[1] & (1 << i)) >> i);
+    final pinStates = new HashMap.fromIterables(pins, states);
+    _digitalMessageController.add(pinStates);
+  }
+
   /// Stream that sent FirmataVersion
-  Stream<FirmataVersion> get onReportVersion =>
-      _reportVersionController.stream;
+  Stream<FirmataVersion> get onReportVersion => _reportVersionController.stream;
+
+  /// Stream pin states
+  Stream<Map<int, int>> get onDigitalMessage => _digitalMessageController.stream;
 
 }
 
@@ -193,4 +226,12 @@ class FirmataVersion {
 
   FirmataVersion(this.name, this.major, this.minor);
 
+}
+
+/// A pin state
+class PinState {
+  final int pin;
+  final int state;
+
+  PinState(this.pin, this.state);
 }
