@@ -8,7 +8,7 @@ then
 fi
 
 #PROJECT_DIR=`pwd`
-SERIAL_LIB_PATH=`stat -f %Y packages/serial_port`/..
+SERIAL_LIB_PATH=`readlink packages/serial_port`/..
 cd $SERIAL_LIB_PATH
 
 if [ ! -d packages ]
