@@ -11,53 +11,53 @@ const int END_SYSEX = 0xF7;
 const int QUERY_FIRMWARE = 0x79;
 const int REPORT_VERSION = 0xF9;
 const int ANALOG_MESSAGE = 0xE0;
-const int EXTENDED_ANALOG = 0x6F;
+//const int EXTENDED_ANALOG = 0x6F;
 const int CAPABILITY_QUERY = 0x6B;
-const int CAPABILITY_RESPONSE = 0x6C;
-const int PIN_STATE_QUERY = 0x6D;
-const int PIN_STATE_RESPONSE = 0x6E;
+//const int CAPABILITY_RESPONSE = 0x6C;
+//const int PIN_STATE_QUERY = 0x6D;
+//const int PIN_STATE_RESPONSE = 0x6E;
 const int ANALOG_MAPPING_QUERY = 0x69;
-const int ANALOG_MAPPING_RESPONSE = 0x6A;
-const int I2C_REQUEST = 0x76;
-const int I2C_REPLY = 0x77;
-const int I2C_CONFIG = 0x78;
-const int STRING_DATA = 0x71;
-const int SYSTEM_RESET = 0xFF;
-const int PULSE_OUT = 0x73;
-const int PULSE_IN = 0x74;
-const int SAMPLING_INTERVAL = 0x7A;
-const int STEPPER = 0x72;
-const int ONEWIRE_DATA = 0x73;
-const int ONEWIRE_CONFIG_REQUEST = 0x41;
-const int ONEWIRE_SEARCH_REQUEST = 0x40;
-const int ONEWIRE_SEARCH_REPLY = 0x42;
-const int ONEWIRE_SEARCH_ALARMS_REQUEST = 0x44;
-const int ONEWIRE_SEARCH_ALARMS_REPLY = 0x45;
-const int ONEWIRE_READ_REPLY = 0x43;
-const int ONEWIRE_RESET_REQUEST_BIT = 0x01;
-const int ONEWIRE_READ_REQUEST_BIT = 0x08;
-const int ONEWIRE_DELAY_REQUEST_BIT = 0x10;
-const int ONEWIRE_WRITE_REQUEST_BIT = 0x20;
-const int ONEWIRE_WITHDATA_REQUEST_BITS = 0x3C;
+//const int ANALOG_MAPPING_RESPONSE = 0x6A;
+//const int I2C_REQUEST = 0x76;
+//const int I2C_REPLY = 0x77;
+//const int I2C_CONFIG = 0x78;
+//const int STRING_DATA = 0x71;
+//const int SYSTEM_RESET = 0xFF;
+//const int PULSE_OUT = 0x73;
+//const int PULSE_IN = 0x74;
+//const int SAMPLING_INTERVAL = 0x7A;
+//const int STEPPER = 0x72;
+//const int ONEWIRE_DATA = 0x73;
+//const int ONEWIRE_CONFIG_REQUEST = 0x41;
+//const int ONEWIRE_SEARCH_REQUEST = 0x40;
+//const int ONEWIRE_SEARCH_REPLY = 0x42;
+//const int ONEWIRE_SEARCH_ALARMS_REQUEST = 0x44;
+//const int ONEWIRE_SEARCH_ALARMS_REPLY = 0x45;
+//const int ONEWIRE_READ_REPLY = 0x43;
+//const int ONEWIRE_RESET_REQUEST_BIT = 0x01;
+//const int ONEWIRE_READ_REQUEST_BIT = 0x08;
+//const int ONEWIRE_DELAY_REQUEST_BIT = 0x10;
+//const int ONEWIRE_WRITE_REQUEST_BIT = 0x20;
+//const int ONEWIRE_WITHDATA_REQUEST_BITS = 0x3C;
 
-
+/// Pin usage modes
 class Modes {
 
   static final int INPUT = 0x00;
   static final int OUTPUT = 0x01;
-  static final int ANALOG = 0x02;
-  static final int PWM = 0x03;
-  static final int SERVO = 0x04;
-  static final int SHIFT = 0x05;
-  static final int I2C = 0x06;
-  static final int ONEWIRE = 0x07;
-  static final int STEPPER = 0x08;
-  static final int IGNORE = 0x7F;
-  static final int UNKOWN = 0x10;
+  //static final int ANALOG = 0x02;
+  //static final int PWM = 0x03;
+  //static final int SERVO = 0x04;
+  //static final int SHIFT = 0x05;
+  //static final int I2C = 0x06;
+  //static final int ONEWIRE = 0x07;
+  //static final int STEPPER = 0x08;
+  //static final int IGNORE = 0x7F;
+  //static final int UNKOWN = 0x10;
 
 }
 
-
+/// The arduino board
 class Board {
 
   /// Constant to set a pins value to HIGH when the pin is set to an output.
@@ -66,7 +66,8 @@ class Board {
   static final int LOW = 0;
 
   final SerialPort _serialPort;
-  final _pinStateController = new StreamController<PinState>();
+  /// Stream controller for read
+  final _digitalReadController = new StreamController<PinState>();
   final Map<int, int> _pins = {};
   final SysexParser _parser = new SysexParser();
   final List<int> _digitalOutputData = new List.filled(16, 0);
@@ -99,7 +100,7 @@ class Board {
   void _pinStatesChanged(Map<int, int> states){
     states.forEach((pin, state){
       if(_pins[pin] == Modes.INPUT){
-        _pinStateController.add(new PinState(pin, state));
+        _digitalReadController.add(new PinState(pin, state));
       }
     });
   }
@@ -150,7 +151,7 @@ class Board {
   Future<bool> close() => _serialPort.close();
 
   /// Stream that sent FirmataVersion
-  Stream<PinState> get onPinStateChange => _pinStateController.stream;
+  Stream<PinState> get onDigitalRead => _digitalReadController.stream;
 
 }
 
@@ -220,8 +221,11 @@ class SysexParser {
 
 /// Information about Firmata version
 class FirmataVersion {
+  /// Name of firmware
   final String name;
+  /// Major version of firmware
   final int major;
+  /// Minor version of firmware
   final int minor;
 
   FirmataVersion(this.name, this.major, this.minor);
@@ -230,8 +234,10 @@ class FirmataVersion {
 
 /// A pin state
 class PinState {
+  /// pin number
   final int pin;
-  final int state;
+  /// Value of pin
+  final int value;
 
-  PinState(this.pin, this.state);
+  PinState(this.pin, this.value);
 }

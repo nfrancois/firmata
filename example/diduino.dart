@@ -25,13 +25,13 @@ main() {
     board.pinMode(P1, Modes.INPUT);
     board.pinMode(P2, Modes.INPUT);
 
-    board.onPinStateChange.listen((pinState){
+    board.onDigitalRead.listen((pinState){
       if(pinState.pin == P1){
-        board.digitalWrite(L1, pinState.state);
-        board.digitalWrite(L2, pinState.state);
+        board.digitalWrite(L1, pinState.value);
+        board.digitalWrite(L2, pinState.value);
       } else {
-        board.digitalWrite(L3, pinState.state);
-        board.digitalWrite(L4, pinState.state);
+        board.digitalWrite(L3, pinState.value);
+        board.digitalWrite(L4, pinState.value);
       }
     });
 
