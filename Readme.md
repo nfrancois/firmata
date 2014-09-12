@@ -15,9 +15,9 @@ Currently working :
 
 Firmata needs `serial_port` lib. To install it, easily, just run `bin/install.sh`
 
-## Sample
+## Samples
 
-Blink
+* Blink
 
 ```dart
 
@@ -53,5 +53,50 @@ main() {
 
   }).catchError((error) => print("Cannot connect $error"));
 }
+
+```
+
+* Play with buttons and leds.
+
+```dart
+
+import 'package:firmata/firmata.dart';
+import 'dart:async';
+
+final P1 = 2;
+final P2 = 3;
+final L1 = 4;
+final L2 = 5;
+final L3 = 6;
+final L4 = 7;
+
+main() {
+  print('Diduino start ...');
+  final board = new Board('/dev/tty.usbserial-A92TDN3B');
+  board.open().then((_) {
+
+    print("connected");
+    print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+
+    board.pinMode(L1, Modes.OUTPUT);
+    board.pinMode(L2, Modes.OUTPUT);
+    board.pinMode(L3, Modes.OUTPUT);
+    board.pinMode(L4, Modes.OUTPUT);
+    board.pinMode(P1, Modes.INPUT);
+    board.pinMode(P2, Modes.INPUT);
+
+    board.onDigitalRead.listen((pinState){
+      if(pinState.pin == P1){
+        board.digitalWrite(L1, pinState.value);
+        board.digitalWrite(L2, pinState.value);
+      } else {
+        board.digitalWrite(L3, pinState.value);
+        board.digitalWrite(L4, pinState.value);
+      }
+    });
+
+  }).catchError((error) => print("Cannot connect $error"));
+}
+
 
 ```
