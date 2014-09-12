@@ -1,9 +1,15 @@
 #Firmata
 
+[![Build Status](https://drone.io/github.com/nfrancois/Firmata/status.png)](https://drone.io/github.com/nfrancois/Firmata/latest)
+
 Dart Implementation of [Firmata](https://github.com/firmata/arduino)
 
 Current status : in dev
 
+Currently working :
+* Connexion to Arduino
+* Digital write
+* Digital read
 
 ## Install
 
