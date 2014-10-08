@@ -71,6 +71,7 @@ class Board {
   final Map<int, int> _pins = {};
   final SysexParser _parser = new SysexParser();
   final List<int> _digitalOutputData = new List.filled(16, 0);
+  final List<int> _analoglOutputData = new List.filled(16, 0);
 
   // Firmware version return by Firmata protocol, only read access
   FirmataVersion _firmaware;
@@ -114,26 +115,6 @@ class Board {
     _serialPort.write([PIN_MODE, pin, mode]);
   }
 
-  /// Asks the arduino to write a value to a digital pin
-  Future<bool> digitalWrite(int pin, int value) {
-    final portNumber = (pin >> 3) & 0x0F;
-    if (value == 0) {
-      _digitalOutputData[portNumber] &= ~(1 << (pin & 0x07)); // Clear bit
-    } else {
-      _digitalOutputData[portNumber] |= (1 << (pin & 0x07)); // Set bit
-    }
-    return _serialPort.write([DIGITAL_MESSAGE | portNumber, _digitalOutputData[portNumber] & 0x7F, _digitalOutputData[portNumber] >> 7]);
-  }
-
-  /// Asks the arduino to read the value of digital pin
-  //Future<int> digitalRead(int pin) => new Future.value((_digitalInputData[pin>>3] >> (pin & 0x07)) & 0x01);
-
-  /// Asks the arduino to write an analog message.
-  Future<bool> analogWrite(int pin, int value) {
-    pinMode(pin, Modes.PWM);
-    return _serialPort.write([ANALOG_MESSAGE | (pin & 0x0F), value & 0x7F, value >> 7]);
-  }
-
   /// Resquest a QUERY_FIRMWARE call
   Future<bool> queryFirmware() => _serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
 
@@ -149,8 +130,33 @@ class Board {
   /// Close the connection
   Future<bool> close() => _serialPort.close();
 
+  /// Asks the arduino to write a value to a digital pin
+  Future<bool> digitalWrite(int pin, int value) {
+    final portNumber = (pin >> 3) & 0x0F;
+    if (value == 0) {
+      _digitalOutputData[portNumber] &= ~(1 << (pin & 0x07)); // Clear bit
+    } else {
+      _digitalOutputData[portNumber] |= (1 << (pin & 0x07)); // Set bit
+    }
+    return _serialPort.write([DIGITAL_MESSAGE | portNumber, _digitalOutputData[portNumber] & 0x7F, _digitalOutputData[portNumber] >> 7]);
+  }
+
   /// Stream that sent FirmataVersion
   Stream<PinState> get onDigitalRead => _digitalReadController.stream;
+
+  // Read the digatal value from pin;
+  //int digitalRead(int pin) => _digitalOutputData[pin];
+
+  /// Asks the arduino to write an analog message.
+  Future<bool> analogWrite(int pin, int value) {
+    pinMode(pin, Modes.PWM);
+    return _serialPort.write([ANALOG_MESSAGE | (pin & 0x0F), value & 0x7F, value >> 7]);
+  }
+
+  // TODO analog read stream
+
+  // Read the analog value from pin;
+  //int analogRead(int pin) => _analoglOutputData[pin];
 
 }
 
