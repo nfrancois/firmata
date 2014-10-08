@@ -71,7 +71,8 @@ class Board {
   final Map<int, int> _pins = {};
   final SysexParser _parser = new SysexParser();
   final List<int> _digitalOutputData = new List.filled(16, 0);
-  final List<int> _analoglOutputData = new List.filled(16, 0);
+  final Map<int, int> _digitalInputData = {};
+  final Map<int, int> _analogInputData = {};
 
   // Firmware version return by Firmata protocol, only read access
   FirmataVersion _firmaware;
@@ -101,6 +102,7 @@ class Board {
   void _pinStatesChanged(Map<int, int> states){
     states.forEach((pin, state){
       if(_pins[pin] == Modes.INPUT){
+        _digitalInputData[pin] = state;
         _digitalReadController.add(new PinState(pin, state));
       }
     });
@@ -144,8 +146,8 @@ class Board {
   /// Stream that sent FirmataVersion
   Stream<PinState> get onDigitalRead => _digitalReadController.stream;
 
-  // Read the digatal value from pin;
-  //int digitalRead(int pin) => _digitalOutputData[pin];
+  /// Read the digatal value from pin;
+  int digitalRead(int pin) => _digitalInputData.containsKey(pin) ? _digitalInputData[pin] : 0;
 
   /// Asks the arduino to write an analog message.
   Future<bool> analogWrite(int pin, int value) {
@@ -156,7 +158,7 @@ class Board {
   // TODO analog read stream
 
   // Read the analog value from pin;
-  //int analogRead(int pin) => _analoglOutputData[pin];
+  //int analogRead(int pin) => _analogInputData.containsKey(pin) ? _analogInputData[pin] : 0;
 
 }
 
