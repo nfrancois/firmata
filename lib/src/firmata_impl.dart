@@ -46,7 +46,7 @@ class Modes {
   static final int INPUT = 0x00;
   static final int OUTPUT = 0x01;
   //static final int ANALOG = 0x02;
-  //static final int PWM = 0x03;
+  static final int PWM = 0x03;
   //static final int SERVO = 0x04;
   //static final int SHIFT = 0x05;
   //static final int I2C = 0x06;
@@ -118,9 +118,9 @@ class Board {
   Future<bool> digitalWrite(int pin, int value) {
     final portNumber = (pin >> 3) & 0x0F;
     if (value == 0) {
-      _digitalOutputData[portNumber] &= ~(1 << (pin & 0x07));
+      _digitalOutputData[portNumber] &= ~(1 << (pin & 0x07)); // Clear bit
     } else {
-      _digitalOutputData[portNumber] |= (1 << (pin & 0x07));
+      _digitalOutputData[portNumber] |= (1 << (pin & 0x07)); // Set bit
     }
     return _serialPort.write([DIGITAL_MESSAGE | portNumber, _digitalOutputData[portNumber] & 0x7F, _digitalOutputData[portNumber] >> 7]);
   }
@@ -129,10 +129,9 @@ class Board {
   //Future<int> digitalRead(int pin) => new Future.value((_digitalInputData[pin>>3] >> (pin & 0x07)) & 0x01);
 
   /// Asks the arduino to write an analog message.
-  // TODO : when pin > 15 ?
   Future<bool> analogWrite(int pin, int value) {
-    _pins[pin] = value;
-    return _serialPort.write([ANALOG_MESSAGE | pin, value & 0x7F, (value >> 7) & 0x7F]);
+    pinMode(pin, Modes.PWM);
+    return _serialPort.write([ANALOG_MESSAGE | (pin & 0x0F), value & 0x7F, value >> 7]);
   }
 
   /// Resquest a QUERY_FIRMWARE call
