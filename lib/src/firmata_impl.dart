@@ -66,8 +66,10 @@ class Board {
   static final int LOW = 0;
 
   final SerialPort _serialPort;
-  /// Stream controller for read
+  /// Stream controller for digital read
   final _digitalReadController = new StreamController<PinState>();
+  /// Stream controller for analog read
+  final _analogReadController = new StreamController<PinState>();
   final Map<int, int> _pins = {};
   final SysexParser _parser = new SysexParser();
   final List<int> _digitalOutputData = new List.filled(16, 0);
@@ -95,6 +97,7 @@ class Board {
       queryCapability().then((_) => queryAnalogMapping()).then((_) => completer.complete(true));
     });
     _parser.onDigitalMessage.listen(_pinStatesChanged);
+    //_parser.onAnaloglMessage.listen(_pinStatesChanged);
     return completer.future;
   }
 
@@ -146,6 +149,9 @@ class Board {
   /// Stream that sent FirmataVersion
   Stream<PinState> get onDigitalRead => _digitalReadController.stream;
 
+  /// Stream that sent FirmataVersion
+  Stream<PinState> get onAnalogRead => _analogReadController.stream;
+
   /// Read the digatal value from pin;
   int digitalRead(int pin) => _digitalInputData.containsKey(pin) ? _digitalInputData[pin] : 0;
 
@@ -160,6 +166,12 @@ class Board {
   // Read the analog value from pin;
   //int analogRead(int pin) => _analogInputData.containsKey(pin) ? _analogInputData[pin] : 0;
 
+  // Asks the arduino to move a servo
+  //Future<bool> servoWrite(int pin, num angle) {
+  //  pinMode(pin, Modes.SERVO);
+  //  return _serialPort.write([ArduinoFirmata.ANALOG_MESSAGE | (pin & 0x0F), angle & 0x7F, angle >> 7]);
+  //);
+
 }
 
 
@@ -168,6 +180,7 @@ class SysexParser {
 
   final _reportVersionController = new StreamController<FirmataVersion>();
   final _digitalMessageController = new StreamController<Map<int, int>>();
+  final _analoglMessageController = new StreamController<Map<int, int>>();
   final List<int> _buffer = [];
   int _currentAnalyse = 0;
 
@@ -180,7 +193,7 @@ class SysexParser {
   void _processByte(int byte){
     if (_currentAnalyse == 0) { // find current analyse if necessary
       // Only analyse some messages
-      if (byte == REPORT_VERSION || byte == DIGITAL_MESSAGE){
+      if (byte == REPORT_VERSION || byte == DIGITAL_MESSAGE /*|| byte == ANALOG_MESSAGE*/){
         _currentAnalyse = byte;
         _buffer.add(byte);
       }
@@ -192,6 +205,9 @@ class SysexParser {
         _reset();
       } else if(_currentAnalyse == DIGITAL_MESSAGE && _buffer.length == 3) {
         _decodeDigitalMessage(_buffer);
+        _reset();
+      } else if(_currentAnalyse == ANALOG_MESSAGE && _buffer.length == 3){
+        _decodeAnaloglMessage(_buffer);
         _reset();
       }
     }
@@ -218,11 +234,21 @@ class SysexParser {
     _digitalMessageController.add(pinStates);
   }
 
+  void _decodeAnaloglMessage(List<int> message){
+    final pins = new List<int>.generate(8, (i) => i+(message[2]*8));
+    final states = new List<int>.generate(8, (i) => (message[1] & (1 << i)) >> i);
+    final pinStates = new HashMap.fromIterables(pins, states);
+    _analoglMessageController.add(pinStates);
+  }
+
   /// Stream that sent FirmataVersion
   Stream<FirmataVersion> get onReportVersion => _reportVersionController.stream;
 
-  /// Stream pin states
+  /// Stream pin digital states
   Stream<Map<int, int>> get onDigitalMessage => _digitalMessageController.stream;
+
+  /// Stream pin analog states
+  Stream<Map<int, int>> get onAnaloglMessage => _analoglMessageController.stream;
 
 }
 
