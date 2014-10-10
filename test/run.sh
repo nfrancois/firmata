@@ -3,4 +3,4 @@
 # prepare SerialPort lib
 bin/install.sh
 
-dart test/test_firmata.dart
+dart test/test_sysex_parser.dart
