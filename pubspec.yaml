@@ -1,13 +1,11 @@
 name: firmata
-version: 0.0.2-dev
+version: 0.1.0-dev
 description: Dart Implementation of Firmata
 author: Nicolas Francois  <nicolas.franc@gmail.com>
 homepage: https://github.com/nfrancois/Firmata
 environnment:
   sdk: '>=1.5.0 <2.0.0'
 dependencies:
-  serial_port: ">=0.0.2 <0.0.3"
-#   serial_port:
-#    path: ../SerialPort
+  serial_port: ">=0.0.3 <0.0.4"
 dev_dependencies:
   unittest: ">=0.11.0+4 <0.12.0"

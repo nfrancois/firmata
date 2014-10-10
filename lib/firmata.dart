@@ -3,6 +3,7 @@ library serial_port;
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:collection';
+import 'dart:io';
 import 'dart:math' as Math;
 import 'package:serial_port/serial_port.dart';
 

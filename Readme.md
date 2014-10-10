@@ -31,8 +31,7 @@ final ledPin = 13;
 
 main() {
   print('blink start ...');
-  final board = new Board('/dev/cu.usbmodem1421');
-  board.open().then((_) {
+  Board.detect().then((board) {
 
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
@@ -72,8 +71,7 @@ final L4 = 7;
 
 main() {
   print('Diduino start ...');
-  final board = new Board('/dev/tty.usbserial-A92TDN3B');
-  board.open().then((_) {
+  Board.detect().then((board) {
 
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
@@ -114,8 +112,7 @@ import 'dart:math';
 final L2 = 5;
 
 main() {
-  final board = new Board('/dev/tty.usbserial-A92TDN3B');
-  board.open().then((_) {
+  Board.detect().then((board) {
 
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
@@ -133,7 +130,6 @@ main() {
 
   }).catchError((error) => print("Cannot connect $error"));
 }
-
 
 
 ```

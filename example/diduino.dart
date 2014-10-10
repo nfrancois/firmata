@@ -12,8 +12,7 @@ final L4 = 7;
 
 main() {
   print('Diduino start ...');
-  final board = new Board('/dev/tty.usbserial-A92TDN3B');
-  board.open().then((_) {
+  Board.detect().then((board) {
 
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');

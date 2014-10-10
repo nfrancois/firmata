@@ -7,8 +7,7 @@ final ledPin = 13;
 
 main() {
   print('blink start ...');
-  final board = new Board('/dev/tty.usbmodem1421');
-  board.open().then((_) {
+  Board.detect().then((board) {
 
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
@@ -27,5 +26,5 @@ main() {
       ledOn = !ledOn;
     });
 
-  }).catchError((error) => print("Cannot connect $error"));
+  }).catchError((error) => print("Cannot connect: $error"));
 }

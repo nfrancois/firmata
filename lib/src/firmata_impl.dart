@@ -58,107 +58,162 @@ class Modes {
 }
 
 /// The arduino board
-class Board {
+abstract class Board {
 
   /// Constant to set a pins value to HIGH when the pin is set to an output.
   static final int HIGH = 1;
   /// Constant to set a pins value to LOW when the pin is set to an output.
   static final int LOW = 0;
 
-  final SerialPort _serialPort;
-  /// Stream controller for digital read
-  final _digitalReadController = new StreamController<PinState>();
-  /// Stream controller for analog read
-  final _analogReadController = new StreamController<PinState>();
-  final Map<int, int> _pins = {};
-  final SysexParser _parser = new SysexParser();
-  final List<int> _digitalOutputData = new List.filled(16, 0);
-  final Map<int, int> _digitalInputData = {};
-  final Map<int, int> _analogInputData = {};
+  /// Try to detect a arduino board
+  static Future<Board> detect(){
+    final completer = new Completer<Board>();
+    SerialPort.avaiblePortNames.then((List<String> portNames){
+      final avaibles = Platform.isMacOS ? portNames.where((name) => name.contains("usb")).toList() : portNames;
+      if(avaibles.isEmpty){
+        completer.completeError("Impossible to detect Arduino board on usb.");
+      } else {
+        final board =  new _Board(avaibles.first);
+        board.open().then((_) => completer.complete(board));
+      }
+    });
+    return completer.future;
+  }
 
-  // Firmware version return by Firmata protocol, only read access
-  FirmataVersion _firmaware;
+  static Future<Board> fromPortName(String portName) {
+    final completer = new Completer<Board>();
+    final board =  new _Board(portName);
+    board.open().then((_) => completer.complete(board));
+    return completer.future;
+  }
+
+  /// Asks the arduino to set the pin to a certain mode.
+  void pinMode(int pin, int mode);
+
+  /// Getter for firmware information
+  FirmataVersion get firmware;
+
+  /// Resquest a QUERY_FIRMWARE call
+  Future<bool> queryFirmware();
+
+  /// Request a CAPABILITY_RESPONSE call
+  Future<bool> queryCapability();
+
+  /// Asks the arduino to tell us its analog pin mapping
+  Future<bool> queryAnalogMapping();
+
+  /// Close the connection
+  Future<bool> close();
+
+  /// Asks the arduino to write a value to a digital pin
+  Future<bool> digitalWrite(int pin, int value);
+
+  /// Stream that sent FirmataVersion
+  Stream<PinState> get onDigitalRead;
+
+  /// Stream that sent FirmataVersion
+  Stream<PinState> get onAnalogRead;
+
+  /// Read the digatal value from pin;
+  int digitalRead(int pin);
+
+  /// Asks the arduino to write an analog message.
+  Future<bool> analogWrite(int pin, int value);
+
+}
+
+
+class _Board extends Board {
+
+  final SerialPort serialPort;
+  /// Stream controller for digital read
+  final digitalReadController = new StreamController<PinState>();
+  /// Stream controller for analog read
+  final analogReadController = new StreamController<PinState>();
+  final Map<int, int> pins = {};
+  final SysexParser parser = new SysexParser();
+  final List<int> digitalOutputData = new List.filled(16, 0);
+  final Map<int, int> digitalInputData = {};
+  final Map<int, int> analogInputData = {};
+  FirmataVersion firmware;
 
   /// Create a board on port name
-  Board(String portname) : _serialPort = new SerialPort(portname, baudrate: 57600);
+  _Board(String portname) : serialPort = new SerialPort(portname, baudrate: 57600);
 
   /// Open the connection with the board
   Future<bool> open() {
     final completer = new Completer<bool>();
-    _serialPort.open().then((_) {
-      _serialPort.onRead.listen(_parser.append);
+    serialPort.open().then((_) {
+      serialPort.onRead.listen(parser.append);
     });
-    _parser.onReportVersion.listen((firmware) {
-      _firmaware = firmware;
+    parser.onReportVersion.listen((firmware) {
+      this.firmware = firmware;
       for (var i = 0; i < 16; i++) {
-        _serialPort.write([REPORT_DIGITAL | i, 1]);
-        _serialPort.write([REPORT_ANALOG | i, 1]);
+        serialPort.write([REPORT_DIGITAL | i, 1]);
+        serialPort.write([REPORT_ANALOG | i, 1]);
       }
       queryCapability().then((_) => queryAnalogMapping()).then((_) => completer.complete(true));
     });
-    _parser.onDigitalMessage.listen(_pinStatesChanged);
+    parser.onDigitalMessage.listen(pinStatesChanged);
     //_parser.onAnaloglMessage.listen(_pinStatesChanged);
     return completer.future;
   }
 
   /// Analyse the change and dispatch wich pin as change
-  void _pinStatesChanged(Map<int, int> states){
+  void pinStatesChanged(Map<int, int> states){
     states.forEach((pin, state){
-      if(_pins[pin] == Modes.INPUT){
-        _digitalInputData[pin] = state;
-        _digitalReadController.add(new PinState(pin, state));
+      if(pins[pin] == Modes.INPUT){
+        digitalInputData[pin] = state;
+        digitalReadController.add(new PinState(pin, state));
       }
     });
   }
 
-  /// Getter for firmware information
-  FirmataVersion get firmware => _firmaware;
-
   /// Asks the arduino to set the pin to a certain mode.
   void pinMode(int pin, int mode) {
-    _pins[pin] = mode;
-    _serialPort.write([PIN_MODE, pin, mode]);
+    pins[pin] = mode;
+    serialPort.write([PIN_MODE, pin, mode]);
   }
 
   /// Resquest a QUERY_FIRMWARE call
-  Future<bool> queryFirmware() => _serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
+  Future<bool> queryFirmware() => serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
 
   /// Asks the arduino to tell us the current state of a pin
   //Future<bool> queryPinState(int pin) => _serialPort.write(([START_SYSEX, PIN_STATE_QUERY, pin, END_SYSEX]));
 
   /// Request a CAPABILITY_RESPONSE call
-  Future<bool> queryCapability() => _serialPort.write([START_SYSEX, CAPABILITY_QUERY, END_SYSEX]);
+  Future<bool> queryCapability() => serialPort.write([START_SYSEX, CAPABILITY_QUERY, END_SYSEX]);
 
   /// Asks the arduino to tell us its analog pin mapping
-  Future<bool> queryAnalogMapping() => _serialPort.write([START_SYSEX, ANALOG_MAPPING_QUERY, END_SYSEX]);
+  Future<bool> queryAnalogMapping() => serialPort.write([START_SYSEX, ANALOG_MAPPING_QUERY, END_SYSEX]);
 
   /// Close the connection
-  Future<bool> close() => _serialPort.close();
+  Future<bool> close() => serialPort.close();
 
   /// Asks the arduino to write a value to a digital pin
   Future<bool> digitalWrite(int pin, int value) {
     final portNumber = (pin >> 3) & 0x0F;
     if (value == 0) {
-      _digitalOutputData[portNumber] &= ~(1 << (pin & 0x07)); // Clear bit
+      digitalOutputData[portNumber] &= ~(1 << (pin & 0x07)); // Clear bit
     } else {
-      _digitalOutputData[portNumber] |= (1 << (pin & 0x07)); // Set bit
+      digitalOutputData[portNumber] |= (1 << (pin & 0x07)); // Set bit
     }
-    return _serialPort.write([DIGITAL_MESSAGE | portNumber, _digitalOutputData[portNumber] & 0x7F, _digitalOutputData[portNumber] >> 7]);
+    return serialPort.write([DIGITAL_MESSAGE | portNumber, digitalOutputData[portNumber] & 0x7F, digitalOutputData[portNumber] >> 7]);
   }
 
   /// Stream that sent FirmataVersion
-  Stream<PinState> get onDigitalRead => _digitalReadController.stream;
+  Stream<PinState> get onDigitalRead => digitalReadController.stream;
 
   /// Stream that sent FirmataVersion
-  Stream<PinState> get onAnalogRead => _analogReadController.stream;
+  Stream<PinState> get onAnalogRead => analogReadController.stream;
 
   /// Read the digatal value from pin;
-  int digitalRead(int pin) => _digitalInputData.containsKey(pin) ? _digitalInputData[pin] : 0;
+  int digitalRead(int pin) => digitalInputData.containsKey(pin) ? digitalInputData[pin] : 0;
 
   /// Asks the arduino to write an analog message.
   Future<bool> analogWrite(int pin, int value) {
     pinMode(pin, Modes.PWM);
-    return _serialPort.write([ANALOG_MESSAGE | (pin & 0x0F), value & 0x7F, value >> 7]);
+    return serialPort.write([ANALOG_MESSAGE | (pin & 0x0F), value & 0x7F, value >> 7]);
   }
 
   // TODO analog read stream
