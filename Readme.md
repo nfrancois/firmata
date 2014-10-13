@@ -4,12 +4,10 @@
 
 Dart Implementation of [Firmata](https://github.com/firmata/arduino)
 
-Current status : in dev
-
 Currently working :
 * Connexion to Arduino
-* Digital write
-* Digital read
+* Digital read/write
+* Analog read/write
 
 ## Install
 

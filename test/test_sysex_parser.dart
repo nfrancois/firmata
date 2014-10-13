@@ -1,3 +1,17 @@
+// Copyright (c) 2014, Nicolas François
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import 'package:unittest/unittest.dart';
 import 'package:firmata/firmata.dart';
 import 'dart:async';
@@ -12,12 +26,11 @@ void main() {
     // Tested object
     SysexParser parser;
 
-    setUp((){
-      parser = new SysexParser();
-    });
-
     test('Report version', (){
+        // given
+        parser = new SysexParser();
 
+        // then
         parser.onReportVersion.first.then(expectAsync((FirmataVersion version){
             expect(version.major, 2);
             expect(version.minor, 3);
@@ -28,12 +41,16 @@ void main() {
           fail('event not fired in time');
         });
 
+        // when
         parser.append(CONNEXION_BYTES);
 
     });
 
     test('Digital message', (){
+      // given
+      parser = new SysexParser(true);
 
+      // then
       parser.onDigitalMessage.first.then(expectAsync((Map<int, int> pinState){
         expect(pinState.length, 8);
         expect(pinState[0], 0);
@@ -50,11 +67,15 @@ void main() {
         fail('event not fired in time');
       });
 
+      // when
       parser.append([144, 12, 0]);
     });
 
     test('Digital message other pins', (){
+      // given
+      parser = new SysexParser(true);
 
+      // then
       parser.onDigitalMessage.first.then(expectAsync((Map<int, int> pinState){
         expect(pinState.length, 8);
         expect(pinState[8], 0);
@@ -71,8 +92,27 @@ void main() {
         fail('event not fired in time');
       });
 
+      // when
       parser.append([144, 12, 1]);
-    });    
+    });
+
+    test('Analog message on pin', (){
+      // given
+      parser = new SysexParser(true);
+
+      // then
+      parser.onAnaloglMessage.first.then(expectAsync((Map<int, int> pinState){
+        expect(pinState.length, 1);
+        expect(pinState[1], 148);
+      }));
+
+      new Timer(new Duration(seconds: 1), () {
+        fail('event not fired in time');
+      });
+
+      // when
+      parser.append([225, 20, 1]);
+    });
 
 
   });

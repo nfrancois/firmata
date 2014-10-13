@@ -14,10 +14,8 @@
 
 import 'package:firmata/firmata.dart';
 import 'dart:async';
-import 'dart:math';
 
-// sample from https://github.com/shokai/node-arduino-firmata/blob/master/samples/analog_write.js
-
+final L1 = 4;
 final L2 = 5;
 
 main() {
@@ -26,16 +24,27 @@ main() {
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
+    board.pinMode(L1, Modes.OUTPUT);
     board.pinMode(L2, Modes.OUTPUT);
 
-    final alea = new Random();
-
-    new Timer.periodic(new Duration(milliseconds: 500), (_) {
-      final value = alea.nextInt(255);
-      print("analog write pin : $value");
-      board.analogWrite(L2, value);
+    board.onAnalogRead.listen((PinState state){
+      if(state.pin == 0){
+        final value = state.value;
+          if(value < 256){
+            board.digitalWrite(L1, Board.LOW);
+            board.digitalWrite(L2, Board.LOW);
+          } else if(value < 512){
+            board.digitalWrite(L1, Board.HIGH);
+            board.digitalWrite(L2, Board.LOW);
+          } else  if(value < 767){
+            board.digitalWrite(L1, Board.LOW);
+            board.digitalWrite(L2, Board.HIGH);
+          } else {
+            board.digitalWrite(L1, Board.HIGH);
+            board.digitalWrite(L2, Board.HIGH);
+          }
+      }
     });
-
 
   }).catchError((error) => print("Cannot connect $error"));
 }

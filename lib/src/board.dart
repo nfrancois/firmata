@@ -1,3 +1,18 @@
+// Copyright (c) 2014, Nicolas François
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
 part of serial_port;
 
 /// Pin usage modes
@@ -114,18 +129,26 @@ class _Board extends Board {
       }
       queryCapability().then((_) => queryAnalogMapping()).then((_) => completer.complete(true));
     });
-    parser.onDigitalMessage.listen(pinStatesChanged);
-    //_parser.onAnaloglMessage.listen(_pinStatesChanged);
+    parser.onDigitalMessage.listen(digitalPinStatesChanged);
+    parser.onAnaloglMessage.listen(analogPinStatesChanged);
     return completer.future;
   }
 
   /// Analyse the change and dispatch wich pin as change
-  void pinStatesChanged(Map<int, int> states){
+  void digitalPinStatesChanged(Map<int, int> states){
     states.forEach((pin, state){
       if(pins[pin] == Modes.INPUT){
         digitalInputData[pin] = state;
         digitalReadController.add(new PinState(pin, state));
       }
+    });
+  }
+
+  /// Analyse the change and dispatch wich pin as change
+  void analogPinStatesChanged(Map<int, int> states){
+    states.forEach((pin, state){
+        analogInputData[pin] = state;
+        analogReadController.add(new PinState(pin, state));
     });
   }
 
@@ -210,4 +233,6 @@ class PinState {
   final int value;
 
   PinState(this.pin, this.value);
+
+  String toString() => "$pin: $value";
 }
