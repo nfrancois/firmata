@@ -20,8 +20,6 @@ Firmata needs `serial_port` lib. To install it, easily, just run `bin/install.sh
 ```dart
 
 
-// Example from https://github.com/jgautier/firmata/blob/master/examples/blink.js
-
 import 'package:firmata/firmata.dart';
 import 'dart:async';
 

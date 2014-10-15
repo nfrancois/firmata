@@ -95,6 +95,9 @@ abstract class Board {
   /// Asks the arduino to write an analog message.
   Future<bool> analogWrite(int pin, int value);
 
+  /// Read the analog value from pin;
+  int analogRead(int pin);
+
 }
 
 
@@ -199,10 +202,8 @@ class _Board extends Board {
     return serialPort.write([ANALOG_MESSAGE | (pin & 0x0F), value & 0x7F, value >> 7]);
   }
 
-  // TODO analog read stream
-
-  // Read the analog value from pin;
-  //int analogRead(int pin) => _analogInputData.containsKey(pin) ? _analogInputData[pin] : 0;
+  /// Read the analog value from pin;
+  int analogRead(int pin) => analogInputData.containsKey(pin) ? analogInputData[pin] : 0;
 
   // Asks the arduino to move a servo
   //Future<bool> servoWrite(int pin, num angle) {
