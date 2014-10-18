@@ -1,5 +1,6 @@
 #!/bin/sh
 
+#TODO transform as a dart script
 #TODO check DART_SDK is define ?
 
 if [ ! -d packages ]
@@ -16,6 +17,6 @@ then
     pub get
 fi
 
-dart build.dart
+dart bin/compile.dart
 
 #cd PROJECT_DIR
