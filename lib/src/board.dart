@@ -22,7 +22,7 @@ class Modes {
   static final int OUTPUT = 0x01;
   //static final int ANALOG = 0x02;
   static final int PWM = 0x03;
-  //static final int SERVO = 0x04;
+  static final int SERVO = 0x04;
   //static final int SHIFT = 0x05;
   //static final int I2C = 0x06;
   //static final int ONEWIRE = 0x07;
@@ -97,6 +97,9 @@ abstract class Board {
 
   /// Read the analog value from pin;
   int analogRead(int pin);
+
+  /// Asks the arduino to move a servo
+  Future<bool> servoWrite(int pin, int angle);
 
 }
 
@@ -205,11 +208,11 @@ class _Board extends Board {
   /// Read the analog value from pin;
   int analogRead(int pin) => analogInputData.containsKey(pin) ? analogInputData[pin] : 0;
 
-  // Asks the arduino to move a servo
-  //Future<bool> servoWrite(int pin, num angle) {
-  //  pinMode(pin, Modes.SERVO);
-  //  return _serialPort.write([ArduinoFirmata.ANALOG_MESSAGE | (pin & 0x0F), angle & 0x7F, angle >> 7]);
-  //);
+  /// Asks the arduino to move a servo
+  Future<bool> servoWrite(int pin, int angle) {
+    pinMode(pin, Modes.SERVO);
+    return serialPort.write([ANALOG_MESSAGE | (pin & 0x0F), angle & 0x7F, angle >> 7]);
+  }
 
 }
 
