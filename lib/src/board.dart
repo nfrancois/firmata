@@ -62,6 +62,9 @@ abstract class Board {
     return completer.future;
   }
 
+  ///
+  Future<bool> reset();
+
   /// Asks the arduino to set the pin to a certain mode.
   void pinMode(int pin, int mode);
 
@@ -163,6 +166,11 @@ class _Board extends Board {
     pins[pin] = mode;
     serialPort.write([PIN_MODE, pin, mode]);
   }
+
+  Future<bool> reset() {
+    return serialPort.write([SYSTEM_RESET]);
+  }
+
 
   /// Resquest a QUERY_FIRMWARE call
   Future<bool> queryFirmware() => serialPort.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
