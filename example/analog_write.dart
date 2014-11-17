@@ -26,7 +26,7 @@ main() {
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
-    board.pinMode(L2, Modes.OUTPUT);
+    board.pinMode(L2, PinModes.OUTPUT);
 
     final alea = new Random();
 

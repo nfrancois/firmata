@@ -27,7 +27,7 @@ main() {
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
     var ledOn = true;
-    board.pinMode(ledPin, Modes.OUTPUT);
+    board.pinMode(ledPin, PinModes.OUTPUT);
 
     new Timer.periodic(new Duration(milliseconds: 500), (_) {
       if (ledOn) {

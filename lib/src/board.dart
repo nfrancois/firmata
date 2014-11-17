@@ -16,7 +16,7 @@
 part of serial_port;
 
 /// Pin usage modes
-class Modes {
+class PinModes {
 
   static final int INPUT = 0x00;
   static final int OUTPUT = 0x01;
@@ -146,7 +146,7 @@ class _Board extends Board {
   /// Analyse the change and dispatch wich pin as change
   void digitalPinStatesChanged(Map<int, int> states){
     states.forEach((pin, state){
-      if(pins[pin] == Modes.INPUT){
+      if(pins[pin] == PinModes.INPUT){
         digitalInputData[pin] = state;
         digitalReadController.add(new PinState(pin, state));
       }
@@ -209,7 +209,7 @@ class _Board extends Board {
 
   /// Asks the arduino to write an analog message.
   Future<bool> analogWrite(int pin, int value) {
-    pinMode(pin, Modes.PWM);
+    pinMode(pin, PinModes.PWM);
     return serialPort.write([ANALOG_MESSAGE | (pin & 0x0F), value & 0x7F, value >> 7]);
   }
 
@@ -218,7 +218,7 @@ class _Board extends Board {
 
   /// Asks the arduino to move a servo
   Future<bool> servoWrite(int pin, int angle) {
-    pinMode(pin, Modes.SERVO);
+    pinMode(pin, PinModes.SERVO);
     return serialPort.write([ANALOG_MESSAGE | (pin & 0x0F), angle & 0x7F, angle >> 7]);
   }
 

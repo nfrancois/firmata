@@ -29,12 +29,12 @@ main() {
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
-    board.pinMode(L1, Modes.OUTPUT);
-    board.pinMode(L2, Modes.OUTPUT);
-    board.pinMode(L3, Modes.OUTPUT);
-    board.pinMode(L4, Modes.OUTPUT);
-    board.pinMode(P1, Modes.INPUT);
-    board.pinMode(P2, Modes.INPUT);
+    board.pinMode(L1, PinModes.OUTPUT);
+    board.pinMode(L2, PinModes.OUTPUT);
+    board.pinMode(L3, PinModes.OUTPUT);
+    board.pinMode(L4, PinModes.OUTPUT);
+    board.pinMode(P1, PinModes.INPUT);
+    board.pinMode(P2, PinModes.INPUT);
 
     board.onDigitalRead.listen((pinState){
       if(pinState.pin == P1){

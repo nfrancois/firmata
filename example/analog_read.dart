@@ -24,8 +24,8 @@ main() {
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
-    board.pinMode(L1, Modes.OUTPUT);
-    board.pinMode(L2, Modes.OUTPUT);
+    board.pinMode(L1, PinModes.OUTPUT);
+    board.pinMode(L2, PinModes.OUTPUT);
 
     board.onAnalogRead.listen((PinState state){
       if(state.pin == 0){
