@@ -32,10 +32,10 @@ main() {
     new Timer.periodic(new Duration(milliseconds: 500), (_) {
       if (ledOn) {
         print("+");
-        board.digitalWrite(ledPin, Board.HIGH);
+        board.digitalWrite(ledPin, PinValue.HIGH);
       } else {
         print("-");
-        board.digitalWrite(ledPin, Board.LOW);
+        board.digitalWrite(ledPin, PinValue.LOW);
       }
       ledOn = !ledOn;
     });

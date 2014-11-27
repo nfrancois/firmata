@@ -32,13 +32,16 @@ class PinModes {
 
 }
 
-/// The arduino board
-abstract class Board {
-
+/// Digital value for pins
+class PinValue {
   /// Constant to set a pins value to HIGH when the pin is set to an output.
   static final int HIGH = 1;
   /// Constant to set a pins value to LOW when the pin is set to an output.
   static final int LOW = 0;
+}
+
+/// The arduino board
+abstract class Board {
 
   /// Try to detect a arduino board
   static Future<Board> detect(){

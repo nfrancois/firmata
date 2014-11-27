@@ -31,17 +31,17 @@ main() {
       if(state.pin == 0){
         final value = state.value;
           if(value < 256){
-            board.digitalWrite(L1, Board.LOW);
-            board.digitalWrite(L2, Board.LOW);
+            board.digitalWrite(L1, PinValue.LOW);
+            board.digitalWrite(L2, PinValue.LOW);
           } else if(value < 512){
-            board.digitalWrite(L1, Board.HIGH);
-            board.digitalWrite(L2, Board.LOW);
+            board.digitalWrite(L1, PinValue.HIGH);
+            board.digitalWrite(L2, PinValue.LOW);
           } else  if(value < 767){
-            board.digitalWrite(L1, Board.LOW);
-            board.digitalWrite(L2, Board.HIGH);
+            board.digitalWrite(L1, PinValue.LOW);
+            board.digitalWrite(L2, PinValue.HIGH);
           } else {
-            board.digitalWrite(L1, Board.HIGH);
-            board.digitalWrite(L2, Board.HIGH);
+            board.digitalWrite(L1, PinValue.HIGH);
+            board.digitalWrite(L2, PinValue.HIGH);
           }
       }
     });
