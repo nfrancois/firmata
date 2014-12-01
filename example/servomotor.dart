@@ -20,18 +20,18 @@ import 'dart:async';
 void main() {
   Board.detect().then((board) {
 
-    final pin = 9;
+    final pin = 2;
 
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
     int angle = 0;
 
-    new Timer.periodic(new Duration(milliseconds: 500), (_) {
+    new Timer.periodic(new Duration(milliseconds: 100), (_) {
       print(angle);
       board.servoWrite(pin, angle);
-      angle+=10;
-      angle%=360;
+      angle++;
+      angle%=180;
     });
 
   }).catchError((error) => print("Cannot connect: $error"));
