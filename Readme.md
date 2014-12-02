@@ -4,10 +4,11 @@
 
 Dart Implementation of [Firmata](https://github.com/firmata/arduino)
 
-Currently working :<br/>
+Currently working :
 * Connexion to Arduino
 * Digital read/write
 * Analog read/write
+* Servo motor
 
 ## Install
 
@@ -127,5 +128,34 @@ main() {
   }).catchError((error) => print("Cannot connect $error"));
 }
 
+
+```
+
+* Servomotor
+
+```dart
+
+import 'package:firmata/firmata.dart';
+import 'dart:async';
+
+void main() {
+  Board.detect().then((board) {
+
+    final pin = 2;
+
+    print("connected");
+    print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+
+    int angle = 0;
+
+    new Timer.periodic(new Duration(milliseconds: 100), (_) {
+      print(angle);
+      board.servoWrite(pin, angle);
+      angle++;
+      angle%=180;
+    });
+
+  }).catchError((error) => print("Cannot connect: $error"));
+}
 
 ```
