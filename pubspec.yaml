@@ -1,5 +1,5 @@
 name: firmata
-version: 0.1.3+1
+version: 0.1.3+2
 description: Dart Implementation of Firmata
 author: Nicolas Francois  <nicolas.franc@gmail.com>
 homepage: https://github.com/nfrancois/firmata

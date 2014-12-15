@@ -24,7 +24,7 @@ class SysexParser {
   int _currentAnalyse = 0;
   bool hasReceiveVersion;
 
-  SysexParser([this.hasReceiveVersion]);
+  SysexParser([this.hasReceiveVersion = false]);
 
   /// Append byte to parse
   void append(List<int> bytes) {
