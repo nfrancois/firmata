@@ -47,7 +47,10 @@ abstract class Board {
   static Future<Board> detect(){
     final completer = new Completer<Board>();
     SerialPort.avaiblePortNames.then((List<String> portNames){
-      final avaibles = Platform.isMacOS ? portNames.where((name) => name.contains("usb")).toList() : portNames;
+      // FIXME name.startsWith("tty") && name.contains("usb")
+      final avaibles = Platform.isMacOS ?
+                        portNames.where((name) => name.startsWith("/dev/tty") && name.contains("usb")).toList() :
+                        portNames;
       if(avaibles.isEmpty){
         completer.completeError("Impossible to detect Arduino board on usb.");
       } else {
