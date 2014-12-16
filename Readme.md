@@ -1,5 +1,6 @@
 #Firmata
 
+[![pub package](http://img.shields.io/pub/v/firmata.svg)](https://pub.dartlang.org/packages/firmata)
 [![Build Status](https://drone.io/github.com/nfrancois/Firmata/status.png)](https://drone.io/github.com/nfrancois/Firmata/latest)
 
 Dart Implementation of [Firmata](https://github.com/firmata/arduino)
