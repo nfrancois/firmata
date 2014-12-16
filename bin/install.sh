@@ -17,6 +17,6 @@ then
     pub get
 fi
 
-dart bin/compile.dart
+dart bin/serial_port.dart compile
 
 #cd PROJECT_DIR
