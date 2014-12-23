@@ -31,6 +31,15 @@ class PinModes {
 
 }
 
+/// I2C modes
+class I2C_MODES {
+  static final int WRITE = 0x00;
+  static final int READ = 0x08;
+  static final int CONTINUOUS_READ = 0x10;
+  static final int STOP_READING = 0x18;
+  //static final int READ_WRITE_MODE_MASK = 0x18;
+}
+
 /// Digital value for pins
 class PinValue {
   /// Constant to set a pins value to HIGH when the pin is set to an output.
@@ -115,6 +124,26 @@ abstract class Board {
   
   void set samplingInterval(int interval);
 
+  /// Sends a I2C config request to the arduino board with an optional
+  /// value in microseconds to delay an I2C Read.
+  /// Must be called before an I2C Read or Write
+  /// [delay] in microseconds to set for I2C Read
+  Future i2cConfig([delay = 0]);
+
+  /// Asks the arduino to send an I2C request to a device
+  /// [slaveAddress] The address of the I2C device
+  /// [bytes] The bytes to send to the device
+  Future i2cWrite(int slaveAddress, List<int> bytes);
+
+
+  /// Asks the arduino to request bytes from an I2C device
+  /// [address] The address of the I2C device
+  /// [numBytes] The number of bytes to receive.
+  Future i2cRead(int address, int numBytes);
+
+  /// Asks the arduino to stop reading from an I2C device
+  Future ic2StopReading(int address);
+
 }
 
 class BoardImpl implements Board {
@@ -132,6 +161,7 @@ class BoardImpl implements Board {
   Stream<Map<int, List<int>>> _capabilityStream;
   Stream<List<int>> _analogMappingStream;
   Stream<PinState> _pinStateStream;
+  Stream<I2CResponse> _i2cReplyStream;
   final Map<int, int> _pins = {};
   final SysexParser _parser = new SysexParser();
   final List<int> _digitalOutputData = new List.filled(16, 0);
@@ -148,6 +178,7 @@ class BoardImpl implements Board {
     _analogMappingStream = _parser.onAnalogMapping.asBroadcastStream();
     _capabilityStream = _parser.onCapability.asBroadcastStream();
     _pinStateStream = _parser.onPinState.asBroadcastStream();
+    _i2cReplyStream = _parser.onI2CReply.asBroadcastStream();
   }
 
   Future open() async {
@@ -271,6 +302,25 @@ class BoardImpl implements Board {
     sendSysex(SAMPLING_INTERVAL, [lsb(interval), msb(interval)] );
   }
 
+  Future i2cConfig([delay = 0]) => sendSysex(I2C_CONFIG, [lsb(delay), msb(delay)]);
+
+  // TODO check I2C is active
+  Future i2cWrite(int address, List<int> bytes) {
+    final data = [address, I2C_MODES.WRITE];
+    bytes.forEach((byte) => data.addAll([lsb(byte), msb(byte)]));
+    return sendSysex(I2C_REQUEST, data);
+  }
+
+  // TODO check I2C is active
+  Future<I2CResponse> i2cRead(int address, int register, int numBytes) {
+    sendSysex(I2C_REQUEST, [address, I2C_MODES.READ, lsb(register), msb(register), lsb(numBytes), msb(numBytes)]);
+    return _i2cReplyStream.first;
+  }
+
+  // TODO check I2C is active
+  Future ic2StopReading(int address) =>
+    sendSysex(I2C_REQUEST, [address, I2C_MODES.STOP_READING]);
+
 }
 
 /// Information about Firmata version
@@ -285,6 +335,19 @@ class FirmataVersion {
   FirmataVersion(this.name, this.major, this.minor);
 
   toString() => "Firmwate: $name-$major-$minor";
+
+}
+
+/// Response of I2C Reply
+class I2CResponse {
+  /// Address
+  final int address;
+  /// Register
+  final int register;
+  /// Data
+  final List<int> data;
+
+  I2CResponse(this.address, this.register, this.data);
 
 }
 

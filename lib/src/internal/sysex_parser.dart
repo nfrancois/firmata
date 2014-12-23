@@ -25,6 +25,7 @@ class SysexParser {
   final _analogMappingController = new StreamController<List<int>>();
   final _capabilityController = new StreamController<Map<int, List<int>>>();
   final _pinStateController = new StreamController<PinState>();
+  final _i2cReplyController = new StreamController<I2CResponse>();
   final List<int> _buffer = [];
   int _currentAnalyse = 0;
   bool hasReceiveVersion;
@@ -46,6 +47,7 @@ class SysexParser {
                                    (byte == QUERY_FIRMWARE) ||
                                    (byte == CAPABILITY_RESPONSE) ||
                                    (byte == ANALOG_MAPPING_RESPONSE) ||
+                                   (byte == I2C_REPLY) ||
                                    (byte == PIN_STATE_RESPONSE)
               )
       ){
@@ -75,6 +77,9 @@ class SysexParser {
         _reset();
       } else if(_currentAnalyse == PIN_STATE_RESPONSE && byte == END_SYSEX){
         _decodePinState(_buffer);
+        _reset();
+      } else if(_currentAnalyse == I2C_REPLY && byte == END_SYSEX){
+        _decodeI2CReply(_buffer);
         _reset();
       }
     }
@@ -147,6 +152,17 @@ class SysexParser {
     _pinStateController.add(new PinState(pin, value));
   }
 
+  void _decodeI2CReply(List<int> message){
+    final address = message[1] | message[2]<< 7;
+    final register = message[3] | message[4]<< 7;
+    List<int> valuesAsBytes = message.getRange(5, message.length-1).toList();
+    final data = [];
+    for(int i=0; i<valuesAsBytes.length; i+=2){
+      data.add(message[i] | message[i+1]<< 7);
+    }
+    _i2cReplyController.add(new I2CResponse(address, register, data));
+  }
+
   /// Stream that sent FirmataVersion
   Stream<FirmataVersion> get onFirmataVersion => _firmataVersion.stream;
 
@@ -164,4 +180,8 @@ class SysexParser {
 
   /// Stream pinState
   Stream<PinState> get onPinState => _pinStateController.stream;
+
+  /// Stream pinState
+  Stream<I2CResponse> get onI2CReply => _i2cReplyController.stream;
+
 }
