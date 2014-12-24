@@ -18,6 +18,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 import 'package:serial_port/serial_port.dart';
+import 'package:gpio_commons/gpio_commons.dart';
 
 part 'src/board.dart';
 part 'src/sysex_parser.dart';

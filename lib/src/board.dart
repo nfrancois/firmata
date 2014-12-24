@@ -224,15 +224,3 @@ class FirmataVersion {
   FirmataVersion(this.name, this.major, this.minor);
 
 }
-
-/// A pin state
-class PinState {
-  /// pin number
-  final int pin;
-  /// Value of pin
-  final int value;
-
-  PinState(this.pin, this.value);
-
-  String toString() => "$pin: $value";
-}
