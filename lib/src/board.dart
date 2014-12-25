@@ -93,10 +93,10 @@ abstract class Board {
   /// Asks the arduino to write a value to a digital pin
   Future digitalWrite(int pin, int value);
 
-  /// Stream that sent FirmataVersion
+  /// Stream that sent state from digital value
   Stream<PinState> get onDigitalRead;
 
-  /// Stream that sent FirmataVersion
+  /// Stream that sent analogic value
   Stream<PinState> get onAnalogRead;
 
   /// Read the digatal value from pin;
