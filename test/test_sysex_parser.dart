@@ -34,7 +34,7 @@ void main() {
         parser.onReportVersion.first.then(expectAsync((FirmataVersion version){
             expect(version.major, 2);
             expect(version.minor, 3);
-            //expect(version.name, 'StandardFirmata.in);
+            expect(version.name, 'StandardFirmata.ino');
         }));
 
         new Timer(new Duration(seconds: 1), () {

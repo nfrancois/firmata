@@ -66,7 +66,7 @@ class SysexParser {
   void _decodeReportVersion(List<int> message) {
     final major = message[1];
     final minor = message[2];
-    final name = new String.fromCharCodes(message.getRange(5, message.length - 1));
+    final name = new String.fromCharCodes(message.getRange(7, message.length - 1).where((b) => b!=0));
     hasReceiveVersion = true;
     _reportVersionController.add(new FirmataVersion(name, major, minor));
   }
