@@ -5,11 +5,20 @@
 
 Dart Implementation of [Firmata](https://github.com/firmata/arduino)
 
-Currently working :
+Inspired by:
+* [js-firmata](https://github.com/jgautier/firmata)
+* [node-arduino-firmata](https://github.com/shokai/node-arduino-firmata)
+
+Currently working:
 * Connexion to Arduino
 * Digital read/write
 * Analog read/write
-* Servo motor
+* Servo
+
+TODO:
+* I2C
+* OneWire
+
 
 ## Install
 
