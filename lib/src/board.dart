@@ -118,8 +118,10 @@ class _Board extends Board {
   final SerialPort serialPort;
   /// Stream controller for digital read
   final digitalReadController = new StreamController<PinState>();
+  Stream<PinState> digitalReadStream;
   /// Stream controller for analog read
   final analogReadController = new StreamController<PinState>();
+  Stream<PinState> analogReadStream;
   final Map<int, int> pins = {};
   final SysexParser parser = new SysexParser();
   final List<int> digitalOutputData = new List.filled(16, 0);
@@ -191,9 +193,19 @@ class _Board extends Board {
     return serialPort.write([DIGITAL_MESSAGE | portNumber, digitalOutputData[portNumber] & 0x7F, digitalOutputData[portNumber] >> 7]);
   }
 
-  Stream<PinState> get onDigitalRead => digitalReadController.stream;
+  Stream<PinState> get onDigitalRead {
+    if(digitalReadStream == null){
+      digitalReadStream = digitalReadController.stream.asBroadcastStream();
+    }
+    return digitalReadStream;
+  }
 
-  Stream<PinState> get onAnalogRead => analogReadController.stream;
+  Stream<PinState> get onAnalogRead {
+    if(analogReadStream == null){
+      analogReadStream = analogReadController.stream.asBroadcastStream();
+    }
+    return analogReadStream;
+  }
 
   int digitalRead(int pin) => digitalInputData.containsKey(pin) ? digitalInputData[pin] : 0;
 
