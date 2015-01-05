@@ -8,6 +8,6 @@ environnment:
 dependencies:
   serial_port: ">=0.2.0 <0.3.0"
   gpio_commons:
-    path: ../gpio_commons
+    git: https://github.com/nfrancois/gpio_commons.git
 dev_dependencies:
   unittest: ">=0.11.4 <0.12.0"
