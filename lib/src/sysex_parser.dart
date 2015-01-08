@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-part of serial_port;
+part of firmata;
 
 /// Parser which read message sent from arduino
 class SysexParser {
