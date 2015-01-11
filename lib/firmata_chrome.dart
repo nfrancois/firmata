@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library firmata;
+library firmata_chrome;
 
 import 'src/firmata_internal.dart';
-import 'package:serial_port/serial_port.dart';
+import 'package:chrome/chrome_app.dart';
 
-part 'src/internal/board.dart';
-part 'src/internal/sysex_parser.dart';
+part 'src/chrome/adapter.dart';

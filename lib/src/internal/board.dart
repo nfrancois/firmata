@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-part of firmata;
+part of firmata_internal;
 
 /// Pin usage modes
 class PinModes {
@@ -37,6 +37,20 @@ class PinValue {
   static final int HIGH = 1;
   /// Constant to set a pins value to LOW when the pin is set to an output.
   static final int LOW = 0;
+}
+
+abstract class SerialPortAdapter {
+
+  SerialPort(String StringPortName);
+
+  Future open();
+
+  Future close();
+
+  Future write(List<int> bytes);
+
+  Stream<List<int>> get onRead;
+
 }
 
 /// The arduino board

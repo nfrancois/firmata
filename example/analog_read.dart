@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import 'package:firmata/firmata.dart';
-import 'dart:async';
 
 final L1 = 4;
 final L2 = 5;

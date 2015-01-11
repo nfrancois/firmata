@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import 'package:unittest/unittest.dart';
-import 'package:firmata/firmata.dart';
+import 'package:firmata/src/firmata_internal.dart';
 import 'dart:async';
 
 void main() {
