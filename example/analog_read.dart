@@ -18,7 +18,7 @@ final L1 = 4;
 final L2 = 5;
 
 main() {
-  Board.detect().then((board) {
+  detect().then((board) {
 
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');

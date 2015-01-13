@@ -16,7 +16,6 @@ library firmata_internal;
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:io';
 import 'package:gpio_commons/gpio_commons.dart';
 
 part 'internal/board.dart';

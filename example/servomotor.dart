@@ -18,7 +18,7 @@ import 'package:firmata/firmata.dart';
 import 'dart:async';
 
 void main() {
-  Board.detect().then((board) {
+  detect().then((board) {
 
     final pin = 2;
 

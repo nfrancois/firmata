@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library firmata;
+library firmata_native;
 
+import 'dart:io';
+import 'dart:async';
 import 'src/firmata_internal.dart';
 import 'package:serial_port/serial_port.dart';
 
-part 'src/internal/board.dart';
-part 'src/internal/sysex_parser.dart';
+part 'src/native/adapter.dart';

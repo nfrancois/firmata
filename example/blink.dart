@@ -21,7 +21,7 @@ final ledPin = 13;
 
 main() {
   print('blink start ...');
-  Board.detect().then((board) {
+  detect().then((board) {
 
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');

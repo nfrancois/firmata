@@ -20,7 +20,7 @@ import 'dart:async';
 final analogPin  = 0;
 
 void main() {
-  Board.detect().then((board) {
+  detect().then((board) {
 
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
