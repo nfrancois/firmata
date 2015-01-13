@@ -14,6 +14,7 @@
 
 library firmata_chrome;
 
+import 'dart:async';
 import 'src/firmata_internal.dart';
 import 'package:chrome/chrome_app.dart';
 

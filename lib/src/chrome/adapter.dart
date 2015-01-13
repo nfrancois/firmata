@@ -14,3 +14,55 @@
 
 part of firmata_chrome;
 
+/// Try to detect a arduino board
+Future<Board> detect() {
+  final completer = new Completer<Board>();
+  serial.getDevices().then((List<DeviceInfo> ports) {
+    if (ports.isEmpty) {
+      completer.completeError("Impossible to detect Arduino board on usb.");
+    }
+    // TODO mac OS filter ?
+    final selected = ports.first;
+    final adapter = new ChromeSerialPortAdapter(selected.path);
+    final board = new Board(adapter);
+    board.open().then((_) => completer.complete(board));
+  });
+  return completer.future;
+}
+
+/// Find a arduino board from the port name.
+Future<Board> fromPortName(String portName) {
+  final completer = new Completer<Board>();
+  final adapter = new ChromeSerialPortAdapter(portName);
+  final board = new Board(adapter);
+  board.open().then((_) => completer.complete(board));
+  return completer.future;
+}
+
+/// Chrome implementation for SerialPortAdapter
+class ChromeSerialPortAdapter implements SerialPortAdapter {
+
+  String _portname;
+  int _id;
+
+  ChromeSerialPortAdapter(String portName){
+    this._portname = portName;
+  }
+
+  Future open() {
+    final completer = new Completer();
+    serial.connect(_portname, new ConnectionOptions(bitrate: 57600)).then((ConnectionInfo conn){
+      _id = conn.connectionId;
+      completer.complete();
+    });
+    return completer.complete();
+  }
+
+  Future close() => serial.disconnect(_id);
+
+  Future write(List<int> bytes) => serial.send(_id, new ArrayBuffer.fromBytes(bytes));
+
+  Stream<List<int>> get onRead =>
+    serial.onReceive.where((info) => info.connectionId == _id).map((info) => info.data.getBytes());
+
+}
