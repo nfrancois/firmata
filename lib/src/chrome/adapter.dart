@@ -24,7 +24,7 @@ Future<Board> detect() {
     // TODO mac OS filter ?
     final selected = ports.first;
     final adapter = new ChromeSerialPortAdapter(selected.path);
-    final board = new Board(adapter);
+    final board = new BoardImpl(adapter);
     board.open().then((_) => completer.complete(board));
   });
   return completer.future;
@@ -34,7 +34,7 @@ Future<Board> detect() {
 Future<Board> fromPortName(String portName) {
   final completer = new Completer<Board>();
   final adapter = new ChromeSerialPortAdapter(portName);
-  final board = new Board(adapter);
+  final board = new BoardImpl(adapter);
   board.open().then((_) => completer.complete(board));
   return completer.future;
 }

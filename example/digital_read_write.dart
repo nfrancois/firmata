@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import 'package:firmata/firmata.dart';
-import 'dart:async';
 
 final P1 = 2;
 final P2 = 3;
@@ -24,7 +23,7 @@ final L4 = 7;
 
 main() {
   print('Diduino start ...');
-  detect().then((board) {
+  detect().then((Board board) {
 
     print("connected");
     print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');

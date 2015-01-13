@@ -24,7 +24,7 @@ Future<Board> detect() {
       completer.completeError("Impossible to detect Arduino board on usb.");
     } else {
       final adapter = new NativeSerialPortAdapter(avaibles.first);
-      final board = new Board(adapter);
+      final board = new BoardImpl(adapter);
       board.open().then((_) => completer.complete(board));
     }
   });
@@ -37,7 +37,7 @@ bool _isMacPortName(String name) => name.startsWith("/dev/tty") && name.contains
 Future<Board> fromPortName(String portName) {
   final completer = new Completer<Board>();
   final adapter = new NativeSerialPortAdapter(portName);
-  final board = new Board(adapter);
+  final board = new BoardImpl(adapter);
   board.open().then((_) => completer.complete(board));
   return completer.future;
 }
