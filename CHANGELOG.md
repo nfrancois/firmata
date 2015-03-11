@@ -1,3 +1,6 @@
+### 0.3.0
+  * Firmata now works with chrome serial api.
+
 ### 0.2.1
   * Fix bugs
   * Extract classes to `gpio_commons`

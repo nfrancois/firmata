@@ -20,6 +20,8 @@ TODO:
 * I2C
 * OneWire
 
+Firmata can runs as Chrome App.
+
 
 ## Install
 
