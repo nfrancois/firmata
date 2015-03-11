@@ -172,3 +172,31 @@ void main() {
 }
 
 ```
+
+* Chrome app
+
+```dart
+import 'dart:html';
+import 'package:firmata/firmata_chrome.dart';
+
+
+main(){
+  ButtonElement led1Button = querySelector("#led1");
+  final led1Pin = 4;
+
+  detect().then((board){
+    print("Connected");
+
+    bool led1On = false;
+    board.pinMode(led1Pin, PinModes.OUTPUT);
+
+    led1Button.onClick.listen((_){
+      led1On = !led1On;
+      led1Button.text = led1On ? "ON" : "OFF";
+      board.digitalWrite(led1Pin, led1On ? PinValue.HIGH : PinValue.LOW);
+    }).onError(print);
+
+  });
+
+}
+```
