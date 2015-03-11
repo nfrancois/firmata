@@ -18,17 +18,22 @@ part of firmata_chrome;
 Future<Board> detect() {
   final completer = new Completer<Board>();
   serial.getDevices().then((List<DeviceInfo> ports) {
-    if (ports.isEmpty) {
-      completer.completeError("Impossible to detect Arduino board on usb.");
-    }
-    // TODO mac OS filter ?
-    final selected = ports.first;
-    final adapter = new ChromeSerialPortAdapter(selected.path);
-    final board = new BoardImpl(adapter);
-    board.open().then((_) => completer.complete(board));
+    runtime.getPlatformInfo().then((PlatformInfo info){
+      final portNames = ports.map((port) => port.path);
+      final available = info.os == "mac" ? portNames.where(_isMacPortName).toList() : portNames;
+      if (available.isEmpty) {
+        completer.completeError("Impossible to detect Arduino board on usb.");
+      } else {
+        final adapter = new ChromeSerialPortAdapter(available.first);
+        final board = new BoardImpl(adapter);
+        board.open().then((_) => completer.complete(board));
+      }
+    });
   });
   return completer.future;
 }
+
+bool _isMacPortName(String name) => name.startsWith("/dev/tty") && name.contains("usb");
 
 /// Find a arduino board from the port name.
 Future<Board> fromPortName(String portName) {
@@ -42,20 +47,20 @@ Future<Board> fromPortName(String portName) {
 /// Chrome implementation for SerialPortAdapter
 class ChromeSerialPortAdapter implements SerialPortAdapter {
 
-  String _portname;
+  String _portName;
   int _id;
 
   ChromeSerialPortAdapter(String portName){
-    this._portname = portName;
+    this._portName = portName;
   }
 
   Future open() {
     final completer = new Completer();
-    serial.connect(_portname, new ConnectionOptions(bitrate: 57600)).then((ConnectionInfo conn){
+    serial.connect(_portName, new ConnectionOptions(bitrate: 57600)).then((ConnectionInfo conn){
       _id = conn.connectionId;
       completer.complete();
     });
-    return completer.complete();
+    return completer.future;
   }
 
   Future close() => serial.disconnect(_id);

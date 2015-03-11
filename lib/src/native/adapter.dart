@@ -17,13 +17,13 @@ part of firmata_native;
 /// Try to detect a arduino board
 Future<Board> detect() {
   final completer = new Completer<Board>();
-  SerialPort.avaiblePortNames.then((List<String> portNames) {
-    final avaibles = Platform.isMacOS ? portNames.where(_isMacPortName).toList() :
+  SerialPort.availablePortNames.then((List<String> portNames) {
+    final available = Platform.isMacOS ? portNames.where(_isMacPortName).toList() :
     portNames;
-    if (avaibles.isEmpty) {
+    if (available.isEmpty) {
       completer.completeError("Impossible to detect Arduino board on usb.");
     } else {
-      final adapter = new NativeSerialPortAdapter(avaibles.first);
+      final adapter = new NativeSerialPortAdapter(available.first);
       final board = new BoardImpl(adapter);
       board.open().then((_) => completer.complete(board));
     }

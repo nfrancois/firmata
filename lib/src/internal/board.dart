@@ -106,7 +106,7 @@ abstract class Board {
 
 }
 
-class BoardImpl {
+class BoardImpl implements Board {
 
   /// Adapter to SerialPort
   final SerialPortAdapter adapter;

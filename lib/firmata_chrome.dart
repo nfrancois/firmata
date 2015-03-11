@@ -17,7 +17,9 @@ library firmata_chrome;
 import 'dart:async';
 import 'src/firmata_internal.dart';
 import 'package:chrome/chrome_app.dart';
-export 'src/firmata_internal.dart' show PinModes, Board, FirmataVersion;
+
+export 'src/firmata_internal.dart' show PinModes, PinValue, Board, FirmataVersion;
+export 'package:gpio_commons/gpio_commons.dart';
 
 part 'src/chrome/adapter.dart';
 

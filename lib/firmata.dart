@@ -17,7 +17,9 @@ library firmata_native;
 import 'dart:io';
 import 'dart:async';
 import 'src/firmata_internal.dart';
-export 'src/firmata_internal.dart' show PinModes, Board, FirmataVersion;
 import 'package:serial_port/serial_port.dart';
+
+export 'src/firmata_internal.dart' show PinModes, PinValue, Board, FirmataVersion;
+export 'package:gpio_commons/gpio_commons.dart';
 
 part 'src/native/adapter.dart';
