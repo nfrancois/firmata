@@ -18,7 +18,7 @@ part of firmata_native;
 Future<Board> detect() {
   final completer = new Completer<Board>();
   SerialPort.availablePortNames.then((List<String> portNames) {
-    final available = Platform.isMacOS ? portNames.where(_isMacPortName).toList() :
+    final available = Platform.isMacOS ? portNames.where(isMacPortName).toList() :
     portNames;
     if (available.isEmpty) {
       completer.completeError("Impossible to detect Arduino board on usb.");
@@ -31,7 +31,7 @@ Future<Board> detect() {
   return completer.future;
 }
 
-bool _isMacPortName(String name) => name.startsWith("/dev/tty") && name.contains("usb");
+
 
 /// Find a arduino board from the port name.
 Future<Board> fromPortName(String portName) {

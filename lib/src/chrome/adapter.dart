@@ -20,7 +20,7 @@ Future<Board> detect() {
   serial.getDevices().then((List<DeviceInfo> ports) {
     runtime.getPlatformInfo().then((PlatformInfo info){
       final portNames = ports.map((port) => port.path);
-      final available = info.os == "mac" ? portNames.where(_isMacPortName).toList() : portNames;
+      final available = info.os == "mac" ? portNames.where(isMacPortName).toList() : portNames;
       if (available.isEmpty) {
         completer.completeError("Impossible to detect Arduino board on usb.");
       } else {
@@ -32,8 +32,6 @@ Future<Board> detect() {
   });
   return completer.future;
 }
-
-bool _isMacPortName(String name) => name.startsWith("/dev/tty") && name.contains("usb");
 
 /// Find a arduino board from the port name.
 Future<Board> fromPortName(String portName) {

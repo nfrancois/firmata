@@ -231,3 +231,6 @@ class FirmataVersion {
   FirmataVersion(this.name, this.major, this.minor);
 
 }
+
+/// Filter portName for MacOs
+bool isMacPortName(String name) => name.startsWith("/dev/tty") && name.contains("usb");
