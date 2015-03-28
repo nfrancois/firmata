@@ -1,3 +1,7 @@
+### 0.3.1
+  * Update dependencies for SDK 1.9.1
+  * Use async/await
+
 ### 0.3.0
   * Firmata now works with chrome serial api.
 
