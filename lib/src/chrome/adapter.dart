@@ -15,31 +15,24 @@
 part of firmata_chrome;
 
 /// Try to detect a arduino board
-Future<Board> detect() {
-  final completer = new Completer<Board>();
-  serial.getDevices().then((List<DeviceInfo> ports) {
-    runtime.getPlatformInfo().then((PlatformInfo info){
-      final portNames = ports.map((port) => port.path);
-      final available = info.os == "mac" ? portNames.where(isMacPortName).toList() : portNames;
-      if (available.isEmpty) {
-        completer.completeError("Impossible to detect Arduino board on usb.");
-      } else {
-        final adapter = new ChromeSerialPortAdapter(available.first);
-        final board = new BoardImpl(adapter);
-        board.open().then((_) => completer.complete(board));
-      }
-    });
-  });
-  return completer.future;
+Future<Board> detect() async {
+  List<DeviceInfo> ports = await serial.getDevices();
+  PlatformInfo info = await runtime.getPlatformInfo();
+  final portNames = ports.map((port) => port.path);
+  final available = info.os == "mac" ? portNames.where(isMacPortName).toList() : portNames;
+  if (available.isEmpty) {
+    throw "Impossible to detect Arduino board on usb.";
+  } else {
+    return fromPortName(available.first);
+  }
 }
 
 /// Find a arduino board from the port name.
-Future<Board> fromPortName(String portName) {
-  final completer = new Completer<Board>();
+Future<Board> fromPortName(String portName) async {
   final adapter = new ChromeSerialPortAdapter(portName);
   final board = new BoardImpl(adapter);
-  board.open().then((_) => completer.complete(board));
-  return completer.future;
+  await board.open();
+  return board;
 }
 
 /// Chrome implementation for SerialPortAdapter

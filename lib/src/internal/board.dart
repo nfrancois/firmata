@@ -205,15 +205,15 @@ class BoardImpl implements Board {
 
   int digitalRead(int pin) => _digitalInputData.containsKey(pin) ? _digitalInputData[pin] : 0;
 
-  Future analogWrite(int pin, int value) {
-    pinMode(pin, PinModes.PWM);
+  Future analogWrite(int pin, int value) async {
+    await pinMode(pin, PinModes.PWM);
     return adapter.write([ANALOG_MESSAGE | (pin & 0x0F), value & 0x7F, value >> 7]);
   }
 
   int analogRead(int pin) => _analogInputData.containsKey(pin) ? _analogInputData[pin] : 0;
 
-  Future servoWrite(int pin, int angle) {
-    pinMode(pin, PinModes.SERVO);
+  Future servoWrite(int pin, int angle) async {
+    await pinMode(pin, PinModes.SERVO);
     return adapter.write([ANALOG_MESSAGE | (pin & 0x0F), angle & 0x7F, angle >> 7]);
   }
 

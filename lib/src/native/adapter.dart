@@ -15,31 +15,22 @@
 part of firmata_native;
 
 /// Try to detect a arduino board
-Future<Board> detect() {
-  final completer = new Completer<Board>();
-  SerialPort.availablePortNames.then((List<String> portNames) {
-    final available = Platform.isMacOS ? portNames.where(isMacPortName).toList() :
-    portNames;
-    if (available.isEmpty) {
-      completer.completeError("Impossible to detect Arduino board on usb.");
-    } else {
-      final adapter = new NativeSerialPortAdapter(available.first);
-      final board = new BoardImpl(adapter);
-      board.open().then((_) => completer.complete(board));
-    }
-  });
-  return completer.future;
+Future<Board> detect() async {
+  List<String> portNames = await SerialPort.availablePortNames;
+  final available = Platform.isMacOS ? portNames.where(isMacPortName).toList() : portNames;
+  if (available.isEmpty) {
+    throw "Impossible to detect Arduino board on usb.";
+  } else {
+    return fromPortName(available.first);
+  }
 }
 
-
-
 /// Find a arduino board from the port name.
-Future<Board> fromPortName(String portName) {
-  final completer = new Completer<Board>();
+Future<Board> fromPortName(String portName) async {
   final adapter = new NativeSerialPortAdapter(portName);
   final board = new BoardImpl(adapter);
-  board.open().then((_) => completer.complete(board));
-  return completer.future;
+  await board.open();
+  return board;
 }
 
 /// Native Implementation for SerialPortAdapter
