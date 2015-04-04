@@ -19,20 +19,19 @@ import 'dart:async';
 
 final analogPin  = 0;
 
-void main() {
-  detect().then((board) {
+void main() async {
+  final board = await detect();
 
-    print("connected");
-    print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+  print("connected");
+  print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
-    new Timer.periodic(new Duration(milliseconds: 500), (_) {
+  new Timer.periodic(new Duration(milliseconds: 500), (_) {
 
-      final value = board.analogRead(analogPin);
-      final temperature = (5*value*100)/1024;
+    final value = board.analogRead(analogPin);
+    final temperature = (5*value*100)/1024;
 
-      print("current temperature=$temperature");
+    print("current temperature=$temperature");
 
-    });
+  });
 
-  }).catchError((error) => print("Cannot connect: $error"));
 }

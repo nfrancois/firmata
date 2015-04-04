@@ -21,29 +21,28 @@ final L2 = 5;
 final L3 = 6;
 final L4 = 7;
 
-main() {
+main() async {
   print('Diduino start ...');
-  detect().then((Board board) {
+  final board = await detect();
 
-    print("connected");
-    print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+  print("connected");
+  print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
-    board.pinMode(L1, PinModes.OUTPUT);
-    board.pinMode(L2, PinModes.OUTPUT);
-    board.pinMode(L3, PinModes.OUTPUT);
-    board.pinMode(L4, PinModes.OUTPUT);
-    board.pinMode(P1, PinModes.INPUT);
-    board.pinMode(P2, PinModes.INPUT);
+  await board.pinMode(L1, PinModes.OUTPUT);
+  await board.pinMode(L2, PinModes.OUTPUT);
+  await board.pinMode(L3, PinModes.OUTPUT);
+  await board.pinMode(L4, PinModes.OUTPUT);
+  await board.pinMode(P1, PinModes.INPUT);
+  await board.pinMode(P2, PinModes.INPUT);
 
-    board.onDigitalRead.listen((pinState){
-      if(pinState.pin == P1){
-        board.digitalWrite(L1, pinState.value);
-        board.digitalWrite(L2, pinState.value);
-      } else {
-        board.digitalWrite(L3, pinState.value);
-        board.digitalWrite(L4, pinState.value);
-      }
-    });
+  board.onDigitalRead.listen((pinState) async {
+    if(pinState.pin == P1){
+      await board.digitalWrite(L1, pinState.value);
+      await board.digitalWrite(L2, pinState.value);
+    } else {
+      await board.digitalWrite(L3, pinState.value);
+      await board.digitalWrite(L4, pinState.value);
+    }
+  });
 
-  }).catchError((error) => print("Cannot connect $error"));
 }

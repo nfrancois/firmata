@@ -17,22 +17,21 @@
 import 'package:firmata/firmata.dart';
 import 'dart:async';
 
-void main() {
-  detect().then((board) {
+void main() async {
+  final board = await detect();
 
-    final pin = 2;
+  final pin = 2;
 
-    print("connected");
-    print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+  print("connected");
+  print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
-    int angle = 0;
+  int angle = 0;
 
-    new Timer.periodic(new Duration(milliseconds: 100), (_) {
-      print(angle);
-      board.servoWrite(pin, angle);
-      angle++;
-      angle%=180;
-    });
+  new Timer.periodic(new Duration(milliseconds: 100), (_) async {
+    print(angle);
+    await board.servoWrite(pin, angle);
+    angle++;
+    angle%=180;
+  });
 
-  }).catchError((error) => print("Cannot connect: $error"));
 }

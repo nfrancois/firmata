@@ -17,33 +17,32 @@ import 'package:firmata/firmata.dart';
 final L1 = 4;
 final L2 = 5;
 
-main() {
-  detect().then((board) {
+main() async {
+  final board = await detect();
 
-    print("connected");
-    print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+  print("connected");
+  print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
-    board.pinMode(L1, PinModes.OUTPUT);
-    board.pinMode(L2, PinModes.OUTPUT);
+  await board.pinMode(L1, PinModes.OUTPUT);
+  await board.pinMode(L2, PinModes.OUTPUT);
 
-    board.onAnalogRead.listen((PinState state){
-      if(state.pin == 0){
-        final value = state.value;
-          if(value < 256){
-            board.digitalWrite(L1, PinValue.LOW);
-            board.digitalWrite(L2, PinValue.LOW);
-          } else if(value < 512){
-            board.digitalWrite(L1, PinValue.HIGH);
-            board.digitalWrite(L2, PinValue.LOW);
-          } else  if(value < 767){
-            board.digitalWrite(L1, PinValue.LOW);
-            board.digitalWrite(L2, PinValue.HIGH);
-          } else {
-            board.digitalWrite(L1, PinValue.HIGH);
-            board.digitalWrite(L2, PinValue.HIGH);
-          }
-      }
-    });
+  board.onAnalogRead.listen((PinState state) async {
+    if(state.pin == 0){
+      final value = state.value;
+        if(value < 256){
+          await board.digitalWrite(L1, PinValue.LOW);
+          await board.digitalWrite(L2, PinValue.LOW);
+        } else if(value < 512){
+          await board.digitalWrite(L1, PinValue.HIGH);
+          await board.digitalWrite(L2, PinValue.LOW);
+        } else  if(value < 767){
+          await board.digitalWrite(L1, PinValue.LOW);
+          await board.digitalWrite(L2, PinValue.HIGH);
+        } else {
+          await board.digitalWrite(L1, PinValue.HIGH);
+          await board.digitalWrite(L2, PinValue.HIGH);
+        }
+    }
+  });
 
-  }).catchError((error) => print("Cannot connect $error"));
 }

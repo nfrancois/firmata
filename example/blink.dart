@@ -19,26 +19,24 @@ import 'dart:async';
 
 final ledPin = 13;
 
-main() {
+main() async {
   print('blink start ...');
-  detect().then((board) {
+  final board = await detect();
 
-    print("connected");
-    print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+  print("connected");
+  print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
-    var ledOn = true;
-    board.pinMode(ledPin, PinModes.OUTPUT);
+  var ledOn = true;
+  await board.pinMode(ledPin, PinModes.OUTPUT);
 
-    new Timer.periodic(new Duration(milliseconds: 500), (_) {
-      if (ledOn) {
-        print("+");
-        board.digitalWrite(ledPin, PinValue.HIGH);
-      } else {
-        print("-");
-        board.digitalWrite(ledPin, PinValue.LOW);
-      }
-      ledOn = !ledOn;
-    });
-
-  }).catchError((error) => print("Cannot connect: $error"));
+  new Timer.periodic(new Duration(milliseconds: 500), (_) async {
+    if (ledOn) {
+      print("+");
+      await board.digitalWrite(ledPin, PinValue.HIGH);
+    } else {
+      print("-");
+      await board.digitalWrite(ledPin, PinValue.LOW);
+    }
+    ledOn = !ledOn;
+  });
 }

@@ -20,22 +20,20 @@ import 'dart:math';
 
 final L2 = 5;
 
-main() {
-  detect().then((board) {
+main() async {
+  final board = await detect();
 
-    print("connected");
-    print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+  print("connected");
+  print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
 
-    board.pinMode(L2, PinModes.OUTPUT);
+  await board.pinMode(L2, PinModes.OUTPUT);
 
-    final alea = new Random();
+  final alea = new Random();
 
-    new Timer.periodic(new Duration(milliseconds: 500), (_) {
-      final value = alea.nextInt(255);
-      print("analog write pin : $value");
-      board.analogWrite(L2, value);
-    });
+  new Timer.periodic(new Duration(milliseconds: 500), (_) async {
+    final value = alea.nextInt(255);
+    print("analog write pin : $value");
+    await board.analogWrite(L2, value);
+  });
 
-
-  }).catchError((error) => print("Cannot connect $error"));
 }
