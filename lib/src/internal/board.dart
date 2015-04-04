@@ -104,6 +104,9 @@ abstract class Board {
   /// Asks the arduino to move a servo
   Future servoWrite(int pin, int angle);
 
+  /// Configure a pin as a servo pin.
+  Future servoConfig(int pin, int min, int max);
+
 }
 
 class BoardImpl implements Board {
@@ -226,6 +229,8 @@ class BoardImpl implements Board {
     await pinMode(pin, PinModes.SERVO);
     return adapter.write([ANALOG_MESSAGE | (pin & 0x0F), lsb(angle), msb(angle)]);
   }
+
+  Future servoConfig(int pin, int min, int max) => sendSysex(SERVO_CONFIG, [lsb(min), msb(min), lsb(max), msb(max)]);
 
 }
 

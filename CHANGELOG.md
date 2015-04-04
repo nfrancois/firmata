@@ -1,3 +1,6 @@
+### 0.4.0
+  * Add servo config method
+
 ### 0.3.1
   * Update dependencies for SDK 1.9.1
   * Use async/await
