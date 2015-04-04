@@ -118,6 +118,8 @@ class BoardImpl implements Board {
   Stream<PinState> digitalReadStream;
   /// Stream controller for analog read
   final _analogReadController = new StreamController<PinState>();
+  /// Stream for query firmware
+  Stream<FirmataVersion> _firmwareStream;
   Stream<PinState> _analogReadStream;
   final Map<int, int> _pins = {};
   final SysexParser _parser = new SysexParser();
@@ -131,11 +133,12 @@ class BoardImpl implements Board {
     adapter.onRead.listen(_parser.append);
     _parser.onDigitalMessage.listen(_digitalPinStatesChanged);
     _parser.onAnaloglMessage.listen(_analogPinStatesChanged);
+    _firmwareStream = _parser.onReportVersion.asBroadcastStream();
   }
 
   Future open() async {
     await adapter.open();
-    _firmware = await _parser.onReportVersion.first;
+    _firmware = await _firmwareStream.first;
     for (var i = 0; i < 16; i++) {
       await adapter.write([REPORT_DIGITAL | i, 1]);
       await adapter.write([REPORT_ANALOG | i, 1]);
@@ -178,7 +181,10 @@ class BoardImpl implements Board {
 
   Future reset() => adapter.write([SYSTEM_RESET]);
 
-  Future queryFirmware() => sendSysex(QUERY_FIRMWARE);
+  Future<FirmataVersion> queryFirmware() async {
+    await sendSysex(QUERY_FIRMWARE);
+    return _firmwareStream.first;
+  }
 
   //Future<bool> queryPinState(int pin) => sendSysex( PIN_STATE_QUERY, [pin]);
 
