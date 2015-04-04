@@ -12,14 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library firmata_chrome;
+import 'package:firmata/firmata.dart';
 
-import 'dart:async';
-import 'src/firmata_internal.dart';
-import 'package:chrome/chrome_app.dart';
 
-export 'src/firmata_internal.dart' show PinModes, ToneCommand, PinValue, Board, FirmataVersion;
-export 'package:gpio_commons/gpio_commons.dart';
+final BEEPER = 1;
+final tones = [261, 277, 294, 311, 330, 349, 370, 392, 415, 440];
 
-part 'src/chrome/adapter.dart';
+main() async {
+  print('Diduino start ...');
+  Board board = await detect();
+  print("connected");
+  for(int tone in tones){
+    await board.playTone(BEEPER, tone, 1500);
+  };
+  board.stopTone(BEEPER);
+}
 

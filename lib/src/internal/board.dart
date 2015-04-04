@@ -26,6 +26,7 @@ class PinModes {
   static final int I2C = 0x06;
   static final int ONEWIRE = 0x07;
   static final int STEPPER = 0x08;
+  static final int TONE = 0x09;
   static final int IGNORE = 0x7F;
   static final int UNKOWN = 0x10;
 
@@ -37,6 +38,14 @@ class PinValue {
   static final int HIGH = 1;
   /// Constant to set a pins value to LOW when the pin is set to an output.
   static final int LOW = 0;
+}
+
+/// Tone command
+class ToneCommand {
+  /// Tone
+  static final int TONE = 0;
+  /// No tone
+  static final int NO_TONE = 1;
 }
 
 /// Adapter to communicate with SerialPort
@@ -112,6 +121,12 @@ abstract class Board {
 
   /// Sends a string to the arduino
   Future sendString(String s);
+
+  /// Play a tone
+  Future playTone(int pin, int frequency, int duration);
+
+  /// Stop the tone
+  Future stopTone(int pin);
 
 }
 
@@ -264,6 +279,13 @@ class BoardImpl implements Board {
     s.codeUnits.forEach((byte) => data.addAll([lsb(byte), msb(byte)]));
     return sendSysex(STRING_DATA, data);
   }
+
+  Future playTone(int pin, int frequency, int duration) async {
+    await sendSysex(PinModes.TONE, [ToneCommand.TONE, pin, lsb(frequency), msb(frequency), lsb(duration), msb(duration)]);
+    return new Future.delayed(new Duration(milliseconds: duration));
+  }
+
+  Future stopTone(int pin) => sendSysex(PinModes.TONE, [ToneCommand.NO_TONE, pin]);
 
 }
 

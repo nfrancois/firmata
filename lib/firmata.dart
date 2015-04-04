@@ -19,7 +19,7 @@ import 'dart:async';
 import 'src/firmata_internal.dart';
 import 'package:serial_port/serial_port.dart';
 
-export 'src/firmata_internal.dart' show PinModes, PinValue, Board, FirmataVersion;
+export 'src/firmata_internal.dart' show PinModes, ToneCommand, PinValue, Board, FirmataVersion;
 export 'package:gpio_commons/gpio_commons.dart';
 
 part 'src/native/adapter.dart';
