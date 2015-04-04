@@ -144,6 +144,16 @@ class BoardImpl implements Board {
     return completer.future;
   }
 
+  Future sendSysex(int command, [List<int> sysexData]) async {
+    List<int> data = [START_SYSEX, command];
+    if(sysexData != null){
+      data.addAll(sysexData);
+    }
+    data.add(END_SYSEX);
+    await adapter.write(data);
+    return true;
+  }
+
   void _digitalPinStatesChanged(Map<int, int> states){
     states.forEach((pin, state){
       if(_pins[pin] == PinModes.INPUT){
@@ -169,13 +179,13 @@ class BoardImpl implements Board {
 
   Future reset() => adapter.write([SYSTEM_RESET]);
 
-  Future queryFirmware() => adapter.write([START_SYSEX, QUERY_FIRMWARE, END_SYSEX]);
+  Future queryFirmware() => sendSysex(QUERY_FIRMWARE);
 
-  //Future<bool> queryPinState(int pin) => _serialPort.write(([START_SYSEX, PIN_STATE_QUERY, pin, END_SYSEX]));
+  //Future<bool> queryPinState(int pin) => sendSysex( PIN_STATE_QUERY, [pin]);
 
-  Future queryCapability() => adapter.write([START_SYSEX, CAPABILITY_QUERY, END_SYSEX]);
+  Future queryCapability() => sendSysex(CAPABILITY_QUERY);
 
-  Future queryAnalogMapping() => adapter.write([START_SYSEX, ANALOG_MAPPING_QUERY, END_SYSEX]);
+  Future queryAnalogMapping() => sendSysex(ANALOG_MAPPING_QUERY);
 
   Future close() => adapter.close();
 
