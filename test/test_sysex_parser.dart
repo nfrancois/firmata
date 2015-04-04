@@ -20,8 +20,9 @@ void main() {
 
   group('Sysex Parser', (){
 
-    final CONNEXION_BYTES = [249, 2, 3, 240, 121, 2, 3, 83, 0, 116, 0, 97, 0, 110, 0, 100, 0, 97, 0, 114, 0, 100, 0,
-    70, 0, 105, 0, 114, 0, 109, 0, 97, 0, 116, 0, 97, 0, 46, 0, 105, 0, 110, 0, 111, 0, 247];
+    final CONNEXION_BYTES =  [0xF9, 0x02, 0x03, 0xf0, 0x79, 0x02, 0x03, 0x53, 0x00, 0x74, 0x00, 0x61, 0x00, 0x6E,
+    0x00, 0x64, 0x00, 0x61, 0x00, 0x72, 0x00, 0x64, 0x00, 0x46, 0x00, 0x69, 0x00, 0x72, 0x00, 0x6D, 0x00, 0x61, 0x00,
+    0x74, 0x00, 0x61, 0x00, 0x2E, 0x00, 0x69, 0x00, 0x6e, 0x00, 0x6F, 0x00, 0xF7];
 
     // Tested object
     SysexParser parser;
@@ -68,7 +69,7 @@ void main() {
       });
 
       // when
-      parser.append([144, 12, 0]);
+      parser.append([0x90, 0x0C, 0x00]);
     });
 
     test('Digital message other pins', (){
@@ -93,7 +94,7 @@ void main() {
       });
 
       // when
-      parser.append([144, 12, 1]);
+      parser.append([0x90, 0x0C, 0x01]);
     });
 
     test('Analog message on pin', (){
@@ -111,7 +112,7 @@ void main() {
       });
 
       // when
-      parser.append([225, 20, 1]);
+      parser.append([0xE1, 0x14, 0x01]);
     });
 
 
