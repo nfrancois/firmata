@@ -196,7 +196,7 @@ class BoardImpl implements Board {
     } else {
       _digitalOutputData[portNumber] |= (1 << (pin & 0x07)); // Set bit
     }
-    return adapter.write([DIGITAL_MESSAGE | portNumber, _digitalOutputData[portNumber] & 0x7F, _digitalOutputData[portNumber] >> 7]);
+    return adapter.write([DIGITAL_MESSAGE | portNumber, lsb(_digitalOutputData[portNumber]), msb(_digitalOutputData[portNumber])]);
   }
 
   Stream<PinState> get onDigitalRead {
@@ -217,14 +217,14 @@ class BoardImpl implements Board {
 
   Future analogWrite(int pin, int value) async {
     await pinMode(pin, PinModes.PWM);
-    return adapter.write([ANALOG_MESSAGE | (pin & 0x0F), value & 0x7F, value >> 7]);
+    return adapter.write([ANALOG_MESSAGE | (pin & 0x0F), lsb(value), msb(value)]);
   }
 
   int analogRead(int pin) => _analogInputData.containsKey(pin) ? _analogInputData[pin] : 0;
 
   Future servoWrite(int pin, int angle) async {
     await pinMode(pin, PinModes.SERVO);
-    return adapter.write([ANALOG_MESSAGE | (pin & 0x0F), angle & 0x7F, angle >> 7]);
+    return adapter.write([ANALOG_MESSAGE | (pin & 0x0F), lsb(angle), msb(angle)]);
   }
 
 }

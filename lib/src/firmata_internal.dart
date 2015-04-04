@@ -19,6 +19,7 @@ import 'dart:collection';
 import 'package:gpio_commons/gpio_commons.dart';
 
 part 'internal/board.dart';
+part 'internal/byte_helper.dart';
 part 'internal/sysex_parser.dart';
 
 
