@@ -127,24 +127,20 @@ class BoardImpl implements Board {
 
   FirmataVersion _firmware;
 
-  BoardImpl(this.adapter);
-
-  Future open() {
-    final completer = new Completer<bool>();
-    adapter.open().then((_) {
-      adapter.onRead.listen(_parser.append);
-    });
-    _parser.onReportVersion.listen((firmware) {
-      this._firmware = firmware;
-      for (var i = 0; i < 16; i++) {
-        adapter.write([REPORT_DIGITAL | i, 1]);
-        adapter.write([REPORT_ANALOG | i, 1]);
-      }
-      queryCapability().then((_) => queryAnalogMapping()).then((_) => completer.complete(true));
-    });
+  BoardImpl(this.adapter){
+    adapter.onRead.listen(_parser.append);
     _parser.onDigitalMessage.listen(_digitalPinStatesChanged);
     _parser.onAnaloglMessage.listen(_analogPinStatesChanged);
-    return completer.future;
+  }
+
+  Future open() async {
+    await adapter.open();
+    _firmware = await _parser.onReportVersion.first;
+    for (var i = 0; i < 16; i++) {
+      await adapter.write([REPORT_DIGITAL | i, 1]);
+      await adapter.write([REPORT_ANALOG | i, 1]);
+    }
+    return true;
   }
 
   Future sendSysex(int command, [List<int> sysexData]) async {
