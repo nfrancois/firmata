@@ -115,6 +115,23 @@ void main() {
       parser.append([0xE1, 0x14, 0x01]);
     });
 
+    test('Analog message on last pin', (){
+      // given
+      parser = new SysexParser(true);
+
+      // then
+      parser.onAnaloglMessage.first.then(expectAsync((Map<int, int> pinState){
+        expect(pinState.length, 1);
+        expect(pinState[15], 148);
+      }));
+
+      new Timer(new Duration(seconds: 1), () {
+        fail('event not fired in time');
+      });
+
+      // when
+      parser.append([0xEF, 0x14, 0x01]);
+    });
 
   });
 }

@@ -1,5 +1,6 @@
 ### 0.4.0
   * Add servo config method
+  * Fixes on analog read on pin 5 to 15.
 
 ### 0.3.1
   * Update dependencies for SDK 1.9.1

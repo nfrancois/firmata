@@ -36,7 +36,7 @@ class SysexParser {
     if (_currentAnalyse == 0) { // find current analyse if necessary
       // Only analyse some messages
       if ((byte == REPORT_VERSION && !hasReceiveVersion)
-          || (hasReceiveVersion && (byte == DIGITAL_MESSAGE || (byte >= ANALOG_MESSAGE && byte <= ANALOG_MESSAGE+4)))){
+          || (hasReceiveVersion && (byte == DIGITAL_MESSAGE || (byte >= ANALOG_MESSAGE && byte <= ANALOG_MESSAGE+0x0F)))){
         _currentAnalyse = byte;
         _buffer.add(byte);
       }
@@ -49,7 +49,7 @@ class SysexParser {
       } else if(_currentAnalyse == DIGITAL_MESSAGE && _buffer.length == 3) {
         _decodeDigitalMessage(_buffer);
         _reset();
-      } else if(_currentAnalyse >= ANALOG_MESSAGE && _currentAnalyse <= ANALOG_MESSAGE+4  && _buffer.length == 3){
+      } else if(_currentAnalyse >= ANALOG_MESSAGE && _currentAnalyse <= ANALOG_MESSAGE+0x0F  && _buffer.length == 3){
         _decodeAnaloglMessage(_buffer);
         _reset();
       }
