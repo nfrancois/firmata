@@ -24,6 +24,9 @@ void main() {
     0x00, 0x64, 0x00, 0x61, 0x00, 0x72, 0x00, 0x64, 0x00, 0x46, 0x00, 0x69, 0x00, 0x72, 0x00, 0x6D, 0x00, 0x61, 0x00,
     0x74, 0x00, 0x61, 0x00, 0x2E, 0x00, 0x69, 0x00, 0x6e, 0x00, 0x6F, 0x00, 0xF7];
 
+    final ANALOG_MAPPING_RESPONSE_BYTES = [0xF0, 0x6A, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F,
+    0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0xF7];
+
     // Tested object
     SysexParser parser;
 
@@ -102,7 +105,7 @@ void main() {
       parser = new SysexParser(true);
 
       // then
-      parser.onAnaloglMessage.first.then(expectAsync((Map<int, int> pinState){
+      parser.onAnalogMessage.first.then(expectAsync((Map<int, int> pinState){
         expect(pinState.length, 1);
         expect(pinState[1], 148);
       }));
@@ -120,7 +123,7 @@ void main() {
       parser = new SysexParser(true);
 
       // then
-      parser.onAnaloglMessage.first.then(expectAsync((Map<int, int> pinState){
+      parser.onAnalogMessage.first.then(expectAsync((Map<int, int> pinState){
         expect(pinState.length, 1);
         expect(pinState[15], 148);
       }));
@@ -131,6 +134,23 @@ void main() {
 
       // when
       parser.append([0xEF, 0x14, 0x01]);
+    });
+
+    test('Analog query response', (){
+      // given
+      parser = new SysexParser(true);
+
+      // then
+      parser.onAnalogMapping.first.then(expectAsync((List<int> analogPins){
+        expect(analogPins, [0, 1, 2, 3, 4, 5]);
+      }));
+
+      new Timer(new Duration(seconds: 1), () {
+        fail('event not fired in time');
+      });
+
+      //
+      parser.append(ANALOG_MAPPING_RESPONSE_BYTES);
     });
 
   });

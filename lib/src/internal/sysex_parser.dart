@@ -14,12 +14,15 @@
 
 part of firmata_internal;
 
+enum ParserAnalyse { NONE, REPORT_VERSION, DIGITAL_MESSAGE, ANALOG_MESSAGE, ANALOG_MAPPING, QUERY_CAPACITY}
+
 /// Parser which read message sent from arduino
 class SysexParser {
 
   final _reportVersionController = new StreamController<FirmataVersion>();
   final _digitalMessageController = new StreamController<Map<int, int>>();
-  final _analoglMessageController = new StreamController<Map<int, int>>();
+  final _analogMessageController = new StreamController<Map<int, int>>();
+  final _analogMappingController = new StreamController<List<int>>();
   final List<int> _buffer = [];
   int _currentAnalyse = 0;
   bool hasReceiveVersion;
@@ -36,7 +39,11 @@ class SysexParser {
     if (_currentAnalyse == 0) { // find current analyse if necessary
       // Only analyse some messages
       if ((byte == REPORT_VERSION && !hasReceiveVersion)
-          || (hasReceiveVersion && (byte == DIGITAL_MESSAGE || (byte >= ANALOG_MESSAGE && byte <= ANALOG_MESSAGE+0x0F)))){
+          || (hasReceiveVersion && (byte == DIGITAL_MESSAGE ||
+                                   (byte >= ANALOG_MESSAGE && byte <= ANALOG_MESSAGE+0x0F)) ||
+                                   (byte == ANALOG_MAPPING_RESPONSE)
+              )
+      ){
         _currentAnalyse = byte;
         _buffer.add(byte);
       }
@@ -50,7 +57,10 @@ class SysexParser {
         _decodeDigitalMessage(_buffer);
         _reset();
       } else if(_currentAnalyse >= ANALOG_MESSAGE && _currentAnalyse <= ANALOG_MESSAGE+0x0F  && _buffer.length == 3){
-        _decodeAnaloglMessage(_buffer);
+        _decodeAnalogMessage(_buffer);
+        _reset();
+      } else if(_currentAnalyse == ANALOG_MAPPING_RESPONSE && byte == END_SYSEX){
+        _decodeAnalogMapping(_buffer);
         _reset();
       }
     }
@@ -78,10 +88,15 @@ class SysexParser {
     _digitalMessageController.add(pinStates);
   }
 
-  void _decodeAnaloglMessage(List<int> message){
+  void _decodeAnalogMessage(List<int> message){
     final pin = message[0]-ANALOG_MESSAGE;
     final value = message[1] + (message[2] << 7);
-    _analoglMessageController.add({pin : value });
+    _analogMessageController.add({pin : value });
+  }
+
+  void _decodeAnalogMapping(List<int> message){
+    final analogPins = message.getRange(1, _buffer.length-1).where((byte) => byte != 0x7f).toList();
+    _analogMappingController.add(analogPins);
   }
 
   /// Stream that sent FirmataVersion
@@ -91,6 +106,9 @@ class SysexParser {
   Stream<Map<int, int>> get onDigitalMessage => _digitalMessageController.stream;
 
   /// Stream pin analog states
-  Stream<Map<int, int>> get onAnaloglMessage => _analoglMessageController.stream;
+  Stream<Map<int, int>> get onAnalogMessage => _analogMessageController.stream;
+
+  /// Stream analog mapping
+  Stream<List<int>> get onAnalogMapping => _analogMappingController.stream;
 
 }
