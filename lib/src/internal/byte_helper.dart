@@ -18,5 +18,4 @@ part of firmata_internal;
 int lsb(int value) => value & 0x7F;
 
 /// Return most significant bit
-// TODO add mask ?
-int msb(int value) => value >> 7;
+int msb(int value) => (value >> 7) & 0x7F;
