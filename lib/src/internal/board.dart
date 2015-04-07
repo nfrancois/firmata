@@ -80,6 +80,9 @@ abstract class Board {
   /// Asks the arduino to tell us its analog pin mapping
   Future queryAnalogMapping();
 
+  /// Asks the arduino to tell the state of a pin
+  Future queryPinState(int pin);
+
   /// Close the connection
   Future close();
 
@@ -126,6 +129,7 @@ class BoardImpl implements Board {
   Stream<PinState> _analogReadStream;
   Stream<Map<int, List<int>>> _capabilityStream;
   Stream<List<int>> _analogMappingStream;
+  Stream<PinState> _pinStateStream;
   final Map<int, int> _pins = {};
   final SysexParser _parser = new SysexParser();
   final List<int> _digitalOutputData = new List.filled(16, 0);
@@ -141,6 +145,7 @@ class BoardImpl implements Board {
     _firmataVersionStream = _parser.onFirmataVersion.asBroadcastStream();
     _analogMappingStream = _parser.onAnalogMapping.asBroadcastStream();
     _capabilityStream = _parser.onCapability.asBroadcastStream();
+    _pinStateStream = _parser.onPinState.asBroadcastStream();
   }
 
   Future open() async {
@@ -193,7 +198,10 @@ class BoardImpl implements Board {
     return _firmataVersionStream.first;
   }
 
-  //Future<bool> queryPinState(int pin) => sendSysex( PIN_STATE_QUERY, [pin]);
+  Future<PinState> queryPinState(int pin) {
+    sendSysex( PIN_STATE_QUERY, [pin]);
+    return _pinStateStream.first;
+  }
 
   Future queryCapability() {
     sendSysex(CAPABILITY_QUERY);

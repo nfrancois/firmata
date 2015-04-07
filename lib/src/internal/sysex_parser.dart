@@ -14,7 +14,7 @@
 
 part of firmata_internal;
 
-enum ParserAnalyse { NONE, REPORT_VERSION, DIGITAL_MESSAGE, ANALOG_MESSAGE, ANALOG_MAPPING, CAPACITY}
+enum ParserAnalyse { NONE, REPORT_VERSION, DIGITAL_MESSAGE, ANALOG_MESSAGE, ANALOG_MAPPING, CAPACITY, PIN_STATE}
 
 /// Parser which read message sent from arduino
 class SysexParser {
@@ -24,6 +24,7 @@ class SysexParser {
   final _analogMessageController = new StreamController<Map<int, int>>();
   final _analogMappingController = new StreamController<List<int>>();
   final _capabilityController = new StreamController<Map<int, List<int>>>();
+  final _pinStateController = new StreamController<PinState>();
   final List<int> _buffer = [];
   int _currentAnalyse = 0;
   bool hasReceiveVersion;
@@ -43,8 +44,9 @@ class SysexParser {
           || (hasReceiveVersion && (byte == DIGITAL_MESSAGE ||
                                    (byte >= ANALOG_MESSAGE && byte <= ANALOG_MESSAGE+0x0F)) ||
                                    (byte == QUERY_FIRMWARE) ||
+                                   (byte == CAPABILITY_RESPONSE) ||
                                    (byte == ANALOG_MAPPING_RESPONSE) ||
-                                   (byte == CAPABILITY_RESPONSE)
+                                   (byte == PIN_STATE_RESPONSE)
               )
       ){
         _currentAnalyse = byte;
@@ -70,6 +72,9 @@ class SysexParser {
         _reset();
       }  else if(_currentAnalyse == CAPABILITY_RESPONSE && byte == END_SYSEX){
         _decodeCapability(_buffer);
+        _reset();
+      } else if(_currentAnalyse == PIN_STATE_RESPONSE && byte == END_SYSEX){
+        _decodePinState(_buffer);
         _reset();
       }
     }
@@ -132,6 +137,16 @@ class SysexParser {
     _capabilityController.add(capabilities);
   }
 
+  void _decodePinState(List<int> message){
+    int pin = message[1];
+    List<int> valueAsBytes = message.getRange(3, message.length-1).toList();
+    var value = 0;
+    for(int i=0; i<valueAsBytes.length; i++){
+      value += valueAsBytes[i] << (7*i);
+    }
+    _pinStateController.add(new PinState(pin, value));
+  }
+
   /// Stream that sent FirmataVersion
   Stream<FirmataVersion> get onFirmataVersion => _firmataVersion.stream;
 
@@ -147,4 +162,6 @@ class SysexParser {
   /// Stream capability
   Stream<Map<int, List<int>>> get onCapability => _capabilityController.stream;
 
+  /// Stream pinState
+  Stream<PinState> get onPinState => _pinStateController.stream;
 }

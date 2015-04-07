@@ -187,11 +187,11 @@ void main() {
       //
       parser.append(ANALOG_MAPPING_RESPONSE_BYTES);
     });
-    
+
     test('Capability query response', (){
       // given
-      parser = new SysexParser(true);      
-      
+      parser = new SysexParser(true);
+
       // then
       parser.onCapability.first.then(expectAsync((Map<int, List<int>> capabilities){
         expect(capabilities.length, 20);
@@ -216,15 +216,55 @@ void main() {
         expect(capabilities[18], [PinModes.INPUT, PinModes.OUTPUT, PinModes.ANALOG, PinModes.SERVO, PinModes.I2C]);
         expect(capabilities[19], [PinModes.INPUT, PinModes.OUTPUT, PinModes.ANALOG, PinModes.SERVO, PinModes.I2C]);
       }));
-      
+
       new Timer(new Duration(seconds: 1), () {
         fail('event not fired in time');
       });
-      
+
       // when
       parser.append(CAPABILITY_QUERY_RESPONSE_BYTES);
-      
+
     });
+
+    test('Pin State response pin 13 is off', (){
+      // given
+      parser = new SysexParser(true);
+
+      // then
+      parser.onPinState.first.then(expectAsync((PinState pinState){
+        expect(pinState.pin, 13);
+        //expect(pinState.mode, PinModes.INPUT);
+        expect(pinState.value, PinValue.LOW);
+      }));
+
+      new Timer(new Duration(seconds: 1), () {
+        fail('event not fired in time');
+      });
+
+      // when
+      parser.append([0xF0, 0x6E, 0x0D, 0x01, 0x00, 0xF7]);
+    });
+
+    test('Pin State response pin 13 is on', (){
+      // given
+      parser = new SysexParser(true);
+
+      // then
+      parser.onPinState.first.then(expectAsync((PinState pinState){
+        expect(pinState.pin, 13);
+        //expect(pinState.mode, PinModes.INPUT);
+        expect(pinState.value, PinValue.HIGH);
+      }));
+
+      new Timer(new Duration(seconds: 1), () {
+        fail('event not fired in time');
+      });
+
+      // when
+      parser.append([0xF0, 0x6E, 0x0D, 0x01, 0x01, 0xF7]);
+    });
+
+    // TODO analog pinState + unknow pinState
 
   });
 }
