@@ -27,6 +27,10 @@ void main() {
     final ANALOG_MAPPING_RESPONSE_BYTES = [0xF0, 0x6A, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F,
     0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0xF7];
 
+    final FIRMWARE_QUERY_RESPONSE_BYTES = [0xF0, 0x79, 0x02, 0x03, 0x53, 0x00, 0x74, 0x00, 0x61, 0x00, 0x6e, 0x00,
+    0x64, 0x00, 0x61, 0x00, 0x72, 0x00, 0x64, 0x00, 0x46, 0x00, 0x69, 0x00, 0x72, 0x00, 0x6d, 0x00, 0x61, 0x00, 0x74,
+    0x00, 0x61, 0x00, 0x2E, 0x00, 0x69, 0x00, 0x6E, 0x00, 0x6F, 0x00, 0xF7];
+
     // Tested object
     SysexParser parser;
 
@@ -35,7 +39,7 @@ void main() {
         parser = new SysexParser();
 
         // then
-        parser.onReportVersion.first.then(expectAsync((FirmataVersion version){
+        parser.onFirmataVersion.first.then(expectAsync((FirmataVersion version){
             expect(version.major, 2);
             expect(version.minor, 3);
             expect(version.name, 'StandardFirmata.ino');
@@ -47,6 +51,26 @@ void main() {
 
         // when
         parser.append(CONNEXION_BYTES);
+
+    });
+
+    test('Report version', (){
+        // given
+        parser = new SysexParser();
+
+        // then
+        parser.onFirmataVersion.first.then(expectAsync((FirmataVersion version){
+            expect(version.major, 2);
+            expect(version.minor, 3);
+            expect(version.name, 'StandardFirmata.ino');
+        }));
+
+        new Timer(new Duration(seconds: 1), () {
+          fail('event not fired in time');
+        });
+
+        // when
+        parser.append(FIRMWARE_QUERY_RESPONSE_BYTES);
 
     });
 

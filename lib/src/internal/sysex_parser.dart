@@ -19,7 +19,7 @@ enum ParserAnalyse { NONE, REPORT_VERSION, DIGITAL_MESSAGE, ANALOG_MESSAGE, ANAL
 /// Parser which read message sent from arduino
 class SysexParser {
 
-  final _reportVersionController = new StreamController<FirmataVersion>();
+  final _firmataVersion = new StreamController<FirmataVersion>();
   final _digitalMessageController = new StreamController<Map<int, int>>();
   final _analogMessageController = new StreamController<Map<int, int>>();
   final _analogMappingController = new StreamController<List<int>>();
@@ -41,6 +41,7 @@ class SysexParser {
       if ((byte == REPORT_VERSION && !hasReceiveVersion)
           || (hasReceiveVersion && (byte == DIGITAL_MESSAGE ||
                                    (byte >= ANALOG_MESSAGE && byte <= ANALOG_MESSAGE+0x0F)) ||
+                                   (byte == QUERY_FIRMWARE) ||
                                    (byte == ANALOG_MAPPING_RESPONSE)
               )
       ){
@@ -51,7 +52,10 @@ class SysexParser {
       _buffer.add(byte);
       // Could be end of message
       if (_currentAnalyse == REPORT_VERSION && byte == END_SYSEX) {
-        _decodeReportVersion(_buffer);
+        _decodeFirmataVersion(_buffer.getRange(4, _buffer.length-1).toList());
+        _reset();
+      } else if(_currentAnalyse == QUERY_FIRMWARE && byte == END_SYSEX){
+        _decodeFirmataVersion(_buffer);
         _reset();
       } else if(_currentAnalyse == DIGITAL_MESSAGE && _buffer.length == 3) {
         _decodeDigitalMessage(_buffer);
@@ -73,12 +77,13 @@ class SysexParser {
   }
 
   /// Decode report version in buffer and trig the stream
-  void _decodeReportVersion(List<int> message) {
+  void _decodeFirmataVersion(List<int> message) {
     final major = message[1];
     final minor = message[2];
-    final name = new String.fromCharCodes(message.getRange(7, message.length - 1).where((b) => b!=0));
+    // TODO   analyse lsb/msb
+    final name = new String.fromCharCodes(message.getRange(3, message.length - 1).where((b) => b!=0));
     hasReceiveVersion = true;
-    _reportVersionController.add(new FirmataVersion(name, major, minor));
+    _firmataVersion.add(new FirmataVersion(name, major, minor));
   }
 
   void _decodeDigitalMessage(List<int> message){
@@ -100,7 +105,7 @@ class SysexParser {
   }
 
   /// Stream that sent FirmataVersion
-  Stream<FirmataVersion> get onReportVersion => _reportVersionController.stream;
+  Stream<FirmataVersion> get onFirmataVersion => _firmataVersion.stream;
 
   /// Stream pin digital states
   Stream<Map<int, int>> get onDigitalMessage => _digitalMessageController.stream;

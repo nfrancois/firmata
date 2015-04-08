@@ -24,7 +24,7 @@ main() async {
   final board = await detect();
 
   print("connected");
-  print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+  print(board.firmware);
 
   var ledOn = true;
   await board.pinMode(ledPin, PinModes.OUTPUT);

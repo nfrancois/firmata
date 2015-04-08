@@ -23,7 +23,7 @@ void main() async {
   final board = await detect();
 
   print("connected");
-  print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+  print(board.firmware);
 
   new Timer.periodic(new Duration(milliseconds: 500), (_) {
 

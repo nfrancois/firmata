@@ -26,7 +26,7 @@ main() async {
   final board = await detect();
 
   print("connected");
-  print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+  print(board.firmware);
 
   await board.pinMode(L1, PinModes.OUTPUT);
   await board.pinMode(L2, PinModes.OUTPUT);

@@ -23,7 +23,7 @@ void main() async {
   final pin = 2;
 
   print("connected");
-  print('Firmware: ${board.firmware.name}-${board.firmware.major}.${board.firmware.minor}');
+  print(board.firmware);
 
   int angle = 0;
 

@@ -119,7 +119,7 @@ class BoardImpl implements Board {
   /// Stream controller for analog read
   final _analogReadController = new StreamController<PinState>();
   /// Stream for query firmware
-  Stream<FirmataVersion> _firmwareStream;
+  Stream<FirmataVersion> _firmataVersionStream;
   Stream<PinState> _analogReadStream;
   Stream<List<int>> _analogMappingStream;
   final Map<int, int> _pins = {};
@@ -134,13 +134,13 @@ class BoardImpl implements Board {
     adapter.onRead.listen(_parser.append);
     _parser.onDigitalMessage.listen(_digitalPinStatesChanged);
     _parser.onAnalogMessage.listen(_analogPinStatesChanged);
-    _firmwareStream = _parser.onReportVersion.asBroadcastStream();
+    _firmataVersionStream = _parser.onFirmataVersion.asBroadcastStream();
     _analogMappingStream = _parser.onAnalogMapping.asBroadcastStream();
   }
 
   Future open() async {
     await adapter.open();
-    _firmware = await _firmwareStream.first;
+    _firmware = await _firmataVersionStream.first;
     for (var i = 0; i < 16; i++) {
       await adapter.write([REPORT_DIGITAL | i, 1]);
       await adapter.write([REPORT_ANALOG | i, 1]);
@@ -184,8 +184,8 @@ class BoardImpl implements Board {
   Future reset() => adapter.write([SYSTEM_RESET]);
 
   Future<FirmataVersion> queryFirmware() async {
-    await sendSysex(QUERY_FIRMWARE);
-    return _firmwareStream.first;
+    sendSysex(QUERY_FIRMWARE);
+    return _firmataVersionStream.first;
   }
 
   //Future<bool> queryPinState(int pin) => sendSysex( PIN_STATE_QUERY, [pin]);
@@ -251,6 +251,8 @@ class FirmataVersion {
   final int minor;
 
   FirmataVersion(this.name, this.major, this.minor);
+
+  toString() => "Firmwate: $name-$major-$minor";
 
 }
 
