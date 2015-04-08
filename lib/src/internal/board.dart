@@ -19,15 +19,15 @@ class PinModes {
 
   static final int INPUT = 0x00;
   static final int OUTPUT = 0x01;
-  //static final int ANALOG = 0x02;
+  static final int ANALOG = 0x02;
   static final int PWM = 0x03;
   static final int SERVO = 0x04;
-  //static final int SHIFT = 0x05;
-  //static final int I2C = 0x06;
-  //static final int ONEWIRE = 0x07;
-  //static final int STEPPER = 0x08;
-  //static final int IGNORE = 0x7F;
-  //static final int UNKOWN = 0x10;
+  static final int SHIFT = 0x05;
+  static final int I2C = 0x06;
+  static final int ONEWIRE = 0x07;
+  static final int STEPPER = 0x08;
+  static final int IGNORE = 0x7F;
+  static final int UNKOWN = 0x10;
 
 }
 
@@ -121,6 +121,7 @@ class BoardImpl implements Board {
   /// Stream for query firmware
   Stream<FirmataVersion> _firmataVersionStream;
   Stream<PinState> _analogReadStream;
+  Stream<Map<int, List<int>>> _capabilityStream;
   Stream<List<int>> _analogMappingStream;
   final Map<int, int> _pins = {};
   final SysexParser _parser = new SysexParser();
@@ -136,6 +137,7 @@ class BoardImpl implements Board {
     _parser.onAnalogMessage.listen(_analogPinStatesChanged);
     _firmataVersionStream = _parser.onFirmataVersion.asBroadcastStream();
     _analogMappingStream = _parser.onAnalogMapping.asBroadcastStream();
+    _capabilityStream = _parser.onCapability.asBroadcastStream();
   }
 
   Future open() async {
@@ -190,7 +192,10 @@ class BoardImpl implements Board {
 
   //Future<bool> queryPinState(int pin) => sendSysex( PIN_STATE_QUERY, [pin]);
 
-  Future queryCapability() => sendSysex(CAPABILITY_QUERY);
+  Future queryCapability() {
+    sendSysex(CAPABILITY_QUERY);
+    return _capabilityStream.first;
+  }
 
   Future<List<int>> queryAnalogMapping() async {
     sendSysex(ANALOG_MAPPING_QUERY);

@@ -14,7 +14,7 @@
 
 part of firmata_internal;
 
-enum ParserAnalyse { NONE, REPORT_VERSION, DIGITAL_MESSAGE, ANALOG_MESSAGE, ANALOG_MAPPING, QUERY_CAPACITY}
+enum ParserAnalyse { NONE, REPORT_VERSION, DIGITAL_MESSAGE, ANALOG_MESSAGE, ANALOG_MAPPING, CAPACITY}
 
 /// Parser which read message sent from arduino
 class SysexParser {
@@ -23,6 +23,7 @@ class SysexParser {
   final _digitalMessageController = new StreamController<Map<int, int>>();
   final _analogMessageController = new StreamController<Map<int, int>>();
   final _analogMappingController = new StreamController<List<int>>();
+  final _capabilityController = new StreamController<Map<int, List<int>>>();
   final List<int> _buffer = [];
   int _currentAnalyse = 0;
   bool hasReceiveVersion;
@@ -42,7 +43,8 @@ class SysexParser {
           || (hasReceiveVersion && (byte == DIGITAL_MESSAGE ||
                                    (byte >= ANALOG_MESSAGE && byte <= ANALOG_MESSAGE+0x0F)) ||
                                    (byte == QUERY_FIRMWARE) ||
-                                   (byte == ANALOG_MAPPING_RESPONSE)
+                                   (byte == ANALOG_MAPPING_RESPONSE) ||
+                                   (byte == CAPABILITY_RESPONSE)
               )
       ){
         _currentAnalyse = byte;
@@ -65,6 +67,9 @@ class SysexParser {
         _reset();
       } else if(_currentAnalyse == ANALOG_MAPPING_RESPONSE && byte == END_SYSEX){
         _decodeAnalogMapping(_buffer);
+        _reset();
+      }  else if(_currentAnalyse == CAPABILITY_RESPONSE && byte == END_SYSEX){
+        _decodeCapability(_buffer);
         _reset();
       }
     }
@@ -104,6 +109,29 @@ class SysexParser {
     _analogMappingController.add(analogPins);
   }
 
+  void _decodeCapability(List<int> message){
+    final length = message.length - 1;// Avoid end_sysex byte
+    var i = 1;
+    var jump = 2;
+    var pin = 0;
+    Map<int, List<int>> capabilities = new Map();
+    while(i<length){
+      final byte = message[i];
+      if(!capabilities.containsKey(pin)){
+        capabilities[pin] = [];
+      }
+      if(byte == 0x7F){// End of current pin config
+        pin++;
+        jump = 1;
+      } else {// can pin mode
+        capabilities[pin].add(byte);
+        jump = 2;
+      }
+      i += jump;
+    }
+    _capabilityController.add(capabilities);
+  }
+
   /// Stream that sent FirmataVersion
   Stream<FirmataVersion> get onFirmataVersion => _firmataVersion.stream;
 
@@ -115,5 +143,8 @@ class SysexParser {
 
   /// Stream analog mapping
   Stream<List<int>> get onAnalogMapping => _analogMappingController.stream;
+
+  /// Stream capability
+  Stream<Map<int, List<int>>> get onCapability => _capabilityController.stream;
 
 }
