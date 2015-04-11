@@ -4,6 +4,7 @@
   * Fixes on analog read on pin 5 to 15.
   * Add capability query
   * Add Firware Version query
+  * Add sendData
 
 ### 0.3.1
   * Update dependencies for SDK 1.9.1

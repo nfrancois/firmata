@@ -30,7 +30,6 @@ const int REPORT_ANALOG = 0xC0;
 const int DIGITAL_MESSAGE = 0x90;
 const int START_SYSEX = 0xF0;
 const int END_SYSEX = 0xF7;
-
 const int QUERY_FIRMWARE = 0x79;
 const int REPORT_VERSION = 0xF9;
 const int ANALOG_MESSAGE = 0xE0;
@@ -45,7 +44,7 @@ const int SERVO_CONFIG = 0x70;
 //const int I2C_REQUEST = 0x76;
 //const int I2C_REPLY = 0x77;
 //const int I2C_CONFIG = 0x78;
-//const int STRING_DATA = 0x71;
+const int STRING_DATA = 0x71;
 const int SYSTEM_RESET = 0xFF;
 //const int PULSE_OUT = 0x73;
 //const int PULSE_IN = 0x74;

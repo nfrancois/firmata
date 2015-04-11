@@ -107,6 +107,9 @@ abstract class Board {
   /// Configure a pin as a servo pin.
   Future servoConfig(int pin, int min, int max);
 
+  /// Sends a string to the arduino
+  Future sendString(String s);
+
 }
 
 class BoardImpl implements Board {
@@ -243,6 +246,12 @@ class BoardImpl implements Board {
   }
 
   Future servoConfig(int pin, int min, int max) => sendSysex(SERVO_CONFIG, [lsb(min), msb(min), lsb(max), msb(max)]);
+
+  Future sendString(String s){
+    final data = [];
+    s.codeUnits.forEach((byte) => data.addAll([lsb(byte), msb(byte)]));
+    return sendSysex(STRING_DATA, data);
+  }
 
 }
 
