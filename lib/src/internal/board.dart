@@ -243,7 +243,11 @@ class BoardImpl implements Board {
 
   Future analogWrite(int pin, int value) async {
     await pinMode(pin, PinModes.PWM);
-    return adapter.write([ANALOG_MESSAGE | (pin & 0x0F), lsb(value), msb(value)]);
+    if(pin<=15){
+      return adapter.write([ANALOG_MESSAGE | (pin & 0x0F), lsb(value), msb(value)]);
+    } else {
+      return sendSysex(EXTENDED_ANALOG, [pin, lsb(value), msb(value)]);
+    }
   }
 
   int analogRead(int pin) => _analogInputData.containsKey(pin) ? _analogInputData[pin] : 0;

@@ -5,6 +5,7 @@
   * Add capability query
   * Add Firware Version query
   * Add sendData
+  * Support extend analog
 
 ### 0.3.1
   * Update dependencies for SDK 1.9.1
