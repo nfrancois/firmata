@@ -8,6 +8,7 @@
   * Support extend analog
   * Fix open connexion for Leonardo
   * Setter for sampling interval
+  * Support data message expansion
 
 ### 0.3.1
   * Update dependencies for SDK 1.9.1

@@ -163,6 +163,40 @@ void main() {
 
       t.cancel();
     });
+    
+   test('Data message expansion first port', (){
+      // given
+      parser = new SysexParser(true);
+
+      // then
+      parser.onDataMessageExpansion.first.then(expectAsync((_){
+ 
+      }));
+
+      new Timer(new Duration(seconds: 1), () {
+        fail('event not fired in time');
+      });
+
+      // when
+      parser.append([0x90, 0, 0]);
+    });
+    
+     test('Data message expansion last port', (){
+      // given
+      parser = new SysexParser(true);
+
+      // then
+      parser.onDataMessageExpansion.first.then(expectAsync((_){
+  
+      }));
+
+      new Timer(new Duration(seconds: 1), () {
+        fail('event not fired in time');
+      });
+
+      // when
+      parser.append([0x9F, 0, 0]);
+    });
 
     test('Analog query response', () async {
       // Given

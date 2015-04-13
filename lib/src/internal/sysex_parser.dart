@@ -25,6 +25,7 @@ class SysexParser {
   final _analogMappingController = new StreamController<List<int>>();
   final _capabilityController = new StreamController<Map<int, List<int>>>();
   final _pinStateController = new StreamController<PinState>();
+  final _dataMessageExpansion = new StreamController();
   final List<int> _buffer = [];
   int _currentAnalyse = 0;
   bool hasReceiveVersion;
@@ -164,4 +165,7 @@ class SysexParser {
 
   /// Stream pinState
   Stream<PinState> get onPinState => _pinStateController.stream;
+
+  /// Stream data message
+  Stream get onDataMessageExpansion => _dataMessageExpansion.stream;
 }
