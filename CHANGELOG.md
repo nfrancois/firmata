@@ -7,6 +7,7 @@
   * Add sendData
   * Support extend analog
   * Fix open connexion for Leonardo
+  * Setter for sampling interval
 
 ### 0.3.1
   * Update dependencies for SDK 1.9.1

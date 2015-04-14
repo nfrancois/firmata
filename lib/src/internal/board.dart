@@ -112,6 +112,8 @@ abstract class Board {
 
   /// Sends a string to the arduino
   Future sendString(String s);
+  
+  void set samplingInterval(int interval);
 
 }
 
@@ -263,6 +265,10 @@ class BoardImpl implements Board {
     final data = [];
     s.codeUnits.forEach((byte) => data.addAll([lsb(byte), msb(byte)]));
     return sendSysex(STRING_DATA, data);
+  }
+  
+  void set samplingInterval(int interval){
+    sendSysex(SAMPLING_INTERVAL, [lsb(interval), msb(interval)] );
   }
 
 }
