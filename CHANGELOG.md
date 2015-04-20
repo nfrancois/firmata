@@ -6,6 +6,7 @@
   * Add Firware Version query
   * Add sendData
   * Support extend analog
+  * Fix open connexion for Leonardo
 
 ### 0.3.1
   * Update dependencies for SDK 1.9.1

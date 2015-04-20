@@ -150,7 +150,7 @@ class BoardImpl implements Board {
 
   Future open() async {
     await adapter.open();
-    _firmware = await _firmataVersionStream.first;
+    _firmware = await queryFirmware();
     for (var i = 0; i < 16; i++) {
       await adapter.write([REPORT_DIGITAL | i, 1]);
       await adapter.write([REPORT_ANALOG | i, 1]);
