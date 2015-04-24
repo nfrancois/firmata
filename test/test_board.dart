@@ -17,6 +17,10 @@ import 'package:firmata/src/firmata_internal.dart';
 import 'package:mockito/mockito.dart';
 import 'dart:async';
 
+final CONNEXION_BYTES =  [0xF9, 0x02, 0x03, 0xf0, 0x79, 0x02, 0x03, 0x53, 0x00, 0x74, 0x00, 0x61, 0x00, 0x6E,
+0x00, 0x64, 0x00, 0x61, 0x00, 0x72, 0x00, 0x64, 0x00, 0x46, 0x00, 0x69, 0x00, 0x72, 0x00, 0x6D, 0x00, 0x61, 0x00,
+0x74, 0x00, 0x61, 0x00, 0x2E, 0x00, 0x69, 0x00, 0x6e, 0x00, 0x6F, 0x00, 0xF7];
+
 // Mock adapter for test 
 class AdapterMock extends Mock implements SerialPortAdapter{
     
@@ -48,7 +52,19 @@ void main() {
         verifyNoMoreInteractions(adapterMock);
     });
 
-   
+   test('Open', () async {
+       // Given
+       adapterMock.readController.add(CONNEXION_BYTES);
+       
+        // When
+        await board.open();
+     
+        // Then
+        expect(board.firmware, new FirmataVersion("StandardFirmata.ino", 2, 3));
+        verify(adapterMock.open());
+        // TODO check writes
+        //verifyNoMoreInteractions(adapterMock);
+    }); 
     
   });
     
