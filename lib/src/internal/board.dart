@@ -155,6 +155,7 @@ class BoardImpl implements Board {
       await adapter.write([REPORT_DIGITAL | i, 1]);
       await adapter.write([REPORT_ANALOG | i, 1]);
     }
+
     return true;
   }
 
@@ -278,7 +279,12 @@ class FirmataVersion {
 
   FirmataVersion(this.name, this.major, this.minor);
 
-  toString() => "Firmwate: $name-$major-$minor";
+  toString() => "Firmware: $name-$major-$minor";
+  
+  bool operator == (FirmataVersion other) =>
+    other.name == name && other.major == major && other.minor == minor;
+  
+  int get hashCode => toString().hashCode;
 
 }
 
