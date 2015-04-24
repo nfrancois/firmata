@@ -65,7 +65,21 @@ void main() {
         // TODO check writes
         //verifyNoMoreInteractions(adapterMock);
     }); 
-    
+  
+   test('Pin mode', () async {
+       // Given
+        adapterMock.readController.add(CONNEXION_BYTES);
+        when(adapterMock.write([244, 13, 1])).thenReturn(new Future.value());    
+        
+        // When
+        await board.pinMode(13, 1);
+     
+        // Then
+        //       
+        verify(adapterMock.write([244, 13, 1]));
+        //verifyNoMoreInteractions(adapterMock);
+    });     
+ 
   });
     
 }
