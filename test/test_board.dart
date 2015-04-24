@@ -45,8 +45,10 @@ void main() {
      
         // Then
         verify(adapterMock.close());
+        verifyNoMoreInteractions(adapterMock);
     });
 
+   
     
   });
     
