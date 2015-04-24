@@ -14,6 +14,7 @@
 
 import 'package:test/test.dart';
 import 'package:firmata/src/firmata_internal.dart';
+import 'package:gpio_commons/gpio_commons.dart';
 import 'dart:async';
 
 void main() {
