@@ -94,6 +94,15 @@ void main() {
       verifyNoMoreInteractions(adapterMock);
     });
 
+    test('Reset', () async {
+      // When
+      final firmware = await board.reset();
+
+      // Then
+      verify(adapterMock.write([0xFF]));
+      verifyNoMoreInteractions(adapterMock);
+    });
+
   });
 
 }
