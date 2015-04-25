@@ -62,8 +62,10 @@ void main() {
         // Then
         expect(board.firmware, new FirmataVersion("StandardFirmata.ino", 2, 3));
         verify(adapterMock.open());
-        // TODO check writes
-        //verifyNoMoreInteractions(adapterMock);
+        for(int i=0xC0; i<=0xDF; i++){
+          verify(adapterMock.write([i, 1]));
+        }
+        verifyNoMoreInteractions(adapterMock);
     });
 
    test('Pin mode', () async {
