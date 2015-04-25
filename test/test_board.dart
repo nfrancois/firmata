@@ -42,7 +42,7 @@ void main() {
         adapterMock = new AdapterMock();
         board = new BoardImpl(adapterMock);
     });
-    
+
     test('Close', () async {
         // When
         await board.close();
@@ -66,21 +66,15 @@ void main() {
         //verifyNoMoreInteractions(adapterMock);
     });
 
-    /*
    test('Pin mode', () async {
-       // Given
-       //when(adapterMock.write([244, 13, 1])).thenReturn(new Future.value(true));
-
         // When
         await board.pinMode(13, PinModes.OUTPUT);
 
         // Then
-        //
-        // Mockito does not suppport currently == on List
         verify(adapterMock.write([244, 13, 1]));
         verifyNoMoreInteractions(adapterMock);
     });
-*/
+
   });
 
 }
