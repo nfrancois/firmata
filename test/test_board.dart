@@ -103,6 +103,15 @@ void main() {
       verifyNoMoreInteractions(adapterMock);
     });
 
+    test('Digital write', () async {
+      // When
+      await board.digitalWrite(13, 1);
+
+      // Then
+      verify(adapterMock.write([145, 32, 0]));
+      verifyNoMoreInteractions(adapterMock);
+    });
+
   });
 
 }
